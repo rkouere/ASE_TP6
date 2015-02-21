@@ -1,0 +1,19 @@
+Un context par coeur.
+
+Soit on garde la liste de context et quand un coeur doit changer il en trouve un autre
+Précautions : 
+- IRQ : IRQ_TIMER
+- la liste de contexte on ne peut y acceder simultanément (sinon on va perdre des contextes etc...).
+- donc besoin de verou (soit irq disable soit attente active)
+Pour gerer les context : soit une liset unique
+soit une liste par coeur (soit ajout param à create contexte soit autre chose) On a aussi besoin de verous).
+
+Un couere fait tourner une fonciton init qui fait rien sauf recuperer. On peut aussi avoir une boucle qui lorsqu'elle recoit un interuption, elle fait un yield.
+
+
+To read :
+On a créé une super structure meag_ctx_s qui contient tous les parametres dont on a besoin. 
+
+
+
+Ex : main demare avec create_ctx

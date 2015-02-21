@@ -1,0 +1,11 @@
+Rendu TP Yaker Mahieddine - Echallier Nicolas
+
+
+Ce qui a été realisé :
+
+- systeme de fichier (creation suppression de dossier ou de fichiers ) : ok.
+- gestion de l'accés au disque avec des semaphores : ok
+- ordonnanceur : ~ 80%
+
+
+J'ai l'impression que dans l'ordonnanceur (sched.c), la fonction reset_ctx_disque n'est jamais appellée parce que l'IRQVECTOR[HDA_IRQ] n'est jamais declanchée.

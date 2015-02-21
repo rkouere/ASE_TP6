@@ -1,0 +1,19 @@
+[1m[32m[mount sequence][0m[32m get hw config
+[1m[32m[mount sequence][0m[32m init hardware
+[1m[32m[mount sequence][0m[32m load mbr
+[1m[32m[load_mbr][0m[32m 
+[0mmbr.mbr_magic = abc32 -- MBR_MAGIC should be abc32
+[1m[32m[mount sequence][0m[32m load current volume
+[1m[32m[load current volume][0m[32m load super from vol 0
+[0m[1m[32m[load super][0m[32m read bloc n
+[1m[32m[read_bloc_n][0m[32m 
+[0mvol = 0 -- mbr.mbr_n_vol = 1
+[1m[32m[read bloc n][0m[32m cylinder = 0 -- sector = 1
+[0m[1m[32mcurrent_super.super_magic = deadbeef -- SUPER_MAGIC is supposed to be= deadbeef
+[1m[32m[load current volume][0m[32m status = 1
+[0m[1m[32m[loop][0m[32m printf
+[0m> [1m[32m[save super] writte super
+[0m[1m[32m[write_bloc_n][0m[32m 
+[0mvol = 0 -- mbr.mbr_n_vol = 1
+[1m[32m[write bloc n][0m[32m cylinder = 0 -- sector = 1
+[0m
