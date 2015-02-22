@@ -1,0 +1,13 @@
+Warning: Cannot convert string "-*-helvetica-medium-r-*-*-*-120-*-*-*-*-iso8859-*" to type FontStruct
+(Annoyed?  Try 'Edit->Preferences->General->Suppress X Warnings'!)
+Warning: Cannot convert string "-*-helvetica-medium-r-*-*-*-100-*-*-*-*-iso8859-*" to type FontStruct
+Warning: Cannot convert string "-*-lucidatypewriter-medium-r-*-*-*-120-*-*-*-*-iso8859-*" to type FontStruct
+Warning: Cannot convert string "-*-lucidatypewriter-bold-r-*-*-*-120-*-*-*-*-iso8859-*" to type FontStruct
+Warning: Cannot convert string "-*-helvetica-bold-r-*-*-*-120-*-*-*-*-iso8859-*" to type FontStruct
+Warning: Cannot convert string "-*-helvetica-medium-*-*-*-*-120-*-*-*-*-iso8859-*" to type FontStruct
+Warning: Cannot convert string "-*-helvetica-bold-*-*-*-*-120-*-*-*-*-iso8859-*" to type FontStruct
+Warning: Cannot convert string "-*-helvetica-bold-r-*-*-*-180-*-*-*-*-iso8859-*" to type FontStruct
+Warning: Cannot convert string "-*-symbol-*-*-*-*-*-120-*-*-*-*-adobe-*" to type FontStruct
+Warning: Could not load font "-*-lucidatypewriter-medium-*-*-*-*-120-*-*-*-*-iso8859-*", using font "fixed" instead
+Warning: Could not load font "-*-lucidatypewriter-medium-r-*-*-*-120-*-*-*-*-iso8859-*", using font "fixed" instead
+Warning: Could not load font "-*-lucidatypewriter-bold-*-*-*-*-120-*-*-*-*-iso8859-*", using font "fixed" instead

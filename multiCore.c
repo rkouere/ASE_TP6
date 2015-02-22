@@ -24,7 +24,6 @@ Relacher le verou, c'est ecrire dans core unlock.
 */
 
 
-
 int nbCor = 3;
 
 
@@ -32,7 +31,7 @@ void f_ping(void *args)
 {
   int i, y;
   int cor = _in(CORE_ID);
-  i = 5;
+  i = 50;
   while(i > 0) {
     printf(BOLDCYAN"on core %d\n", cor);
     printf("A");
@@ -72,6 +71,22 @@ void f_pong(void *args)
     for(y = 0; y < 100000; y++){}; 
     printf("2");
     printf("3");
+    i--;
+  }
+
+  printf(BOLDCYAN"pong has finished %d\n", cor);
+}
+void f_prong(void *args)
+{
+  int i, y;
+  int cor = _in(CORE_ID);
+  i = 100;
+  while(i > 0) {
+    printf(BOLDCYAN" on core %d\n", cor);
+    printf("$$");
+    for(y = 0; y < 100000; y++){}; 
+    printf("%%");
+    printf("!!");
     i--;
   }
 
@@ -119,25 +134,25 @@ main() {
   /* c'est la fonction appellé quand on lance le coeur */
   IRQVECTOR[0] = init;
 
-  /* on gere l'interuption */
-  /* on fait en sorte que toute les interuption de type TIMER_IRQ sont redirige vers le coeur 2 */
-
+  /* on initialise le rand robin */
   randRob = 0;
 
   create_ctx(16380, &f_ping, (void*) NULL, "ping");
   create_ctx(16380, &f_pang, (void*) NULL, "pang");
   create_ctx(16380, &f_pong, (void*) NULL, "pong");
+  create_ctx(16380, &f_prong, (void*) NULL, "prong");
 
   /* on dit que l'on veut mettre en route 6 coeur */
-  _out(CORE_STATUS, 0x7);
   
-
+  _out(CORE_STATUS, 0x3);
+  
+  /* the fonction that is called at each interuption from the clock */
   IRQVECTOR[TIMER_IRQ] = yield;
 
+  /* we set-up the clock */
   _out(TIMER_PARAM, 128+64+32+8);
   _out(TIMER_ALARM, 0xFFFFFFFF - 100);
   irq_enable();
-  /* on initialise le rand robin */
 
 
   /* on doit lancer cette fonction car sinon on sortirait driectement du prog */

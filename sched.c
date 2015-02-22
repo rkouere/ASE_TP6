@@ -38,8 +38,11 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
   ctx->ctx_size = stack_size;
   ctx->ctx_f = f;
   ctx->ctx_arg = args;
+
+  /* QUESTION : comment peut-on initialiser le rsp et le rbp ici car nous n'avons pas encore sauvegardé les contexte ? */
   ctx->ctx_rsp = &(ctx->ctx_stack[stack_size-16]);
   ctx->ctx_rbp = ctx->ctx_rsp;
+  /* fin de ma question */
   ctx->ctx_magic = CTX_MAGIC;
   ctx->ctx_next = ctx;
   mega_ctx[randRob%CORE_NCORE].nb_ctx++;
@@ -61,9 +64,10 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   assert(new_ctx);
 
   if(init_ctx(new_ctx, size, f, args ,name)){ /* error */ return 1; }
+  /* if this is the first ctx that is initialised, we initialise the ring_head */
   if(!mega_ctx[corToInit].ring_head){
     mega_ctx[corToInit].ring_head = new_ctx;
-    mega_ctx[corToInit].ring_head->ctx_next = mega_ctx[randRob%CORE_NCORE].ring_head;
+    mega_ctx[corToInit].ring_head->ctx_next = new_ctx;
   }
   else {
     new_ctx->ctx_next = mega_ctx[corToInit].ring_head->ctx_next;
@@ -118,12 +122,19 @@ void switch_to_ctx(struct ctx_s *new_ctx){
   int currentCor = _in(CORE_ID);
   assert(new_ctx != NULL);
   assert(new_ctx->ctx_magic == CTX_MAGIC);
-  if(!mega_ctx[currentCor].ring_head & !mega_ctx[currentCor].current_ctx){
-    mega_ctx[currentCor].return_ctx = (struct ctx_s*)malloc(sizeof(struct ctx_s));
-    mega_ctx[currentCor].return_ctx->ctx_magic = CTX_MAGIC;
-    __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].return_ctx->ctx_rsp));
-    __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].return_ctx->ctx_rbp));
-  }else{
+
+  
+  /* if(!mega_ctx[currentCor].ring_head & !mega_ctx[currentCor].current_ctx){ */
+  /*   mega_ctx[currentCor].return_ctx = (struct ctx_s*)malloc(sizeof(struct ctx_s)); */
+  /*   mega_ctx[currentCor].return_ctx->ctx_magic = CTX_MAGIC; */
+  /*   __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].return_ctx->ctx_rsp)); */
+  /*   __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].return_ctx->ctx_rbp)); */
+  /* } else { */
+  /*   __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rsp)); */
+  /*   __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rbp)); */
+  /* } */
+  /* if we have a current context... basically, if this is not the first context we initialise, we need to save its rueetn state */
+  if(mega_ctx[currentCor].current_ctx) {
     __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rsp));
     __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rbp));
   }
@@ -132,8 +143,8 @@ void switch_to_ctx(struct ctx_s *new_ctx){
 
   __asm__ ("movl %0, %%esp\n" ::"r"(mega_ctx[currentCor].current_ctx->ctx_rsp));
   __asm__ ("movl %0, %%ebp\n" ::"r"(mega_ctx[currentCor].current_ctx->ctx_rbp));
-
-
+  
+  /* if the current context has not been started, we statrt it */
   if(mega_ctx[currentCor].current_ctx->ctx_state == CTX_RDY){
     mega_ctx[currentCor].current_ctx->ctx_state = CTX_EXQ;
     irq_enable();
@@ -163,15 +174,18 @@ void yield(){
     printf(GREEN"\n======================\n"RESET);
     print_pile_ctx();
   }
+
+  /* if the current context of the thread has no jobs to do */
   if(!mega_ctx[currentCor].current_ctx){
     mega_ctx[currentCor].current_ctx = mega_ctx[currentCor].ring_head;
     mega_ctx[currentCor].current_ctx->ctx_next = mega_ctx[currentCor].ring_head;
     switch_to_ctx(mega_ctx[currentCor].current_ctx);
-  }else{
+  } else {
+    /* we set the new context we are going to look at */
     struct ctx_s * ctx = mega_ctx[currentCor].current_ctx->ctx_next;
 
+    /* we are going to try to find a context we can deal with */
     while(1){
-
       if(ctx->ctx_state == CTX_RDY)
         break;
       if(ctx->ctx_state == CTX_EXQ)
@@ -180,14 +194,18 @@ void yield(){
         ctx = ctx->ctx_next;
         continue;
       }
+      /* if the context we are looking at was finished, we have to kill it */
       if(ctx->ctx_state == CTX_END){
+        /* ctx = ctx->ctx_next;	 */
+	printf("Deleting ctx \n");
 	mega_ctx[currentCor].current_ctx->ctx_next = ctx->ctx_next;
 	free(ctx->ctx_stack);
 	free(ctx);
 	/* si on est en tete de liste */
 	if(mega_ctx[currentCor].ring_head == ctx) 
 	  mega_ctx[currentCor].ring_head = mega_ctx[currentCor].current_ctx;
-        continue;
+	ctx = mega_ctx[currentCor].current_ctx->ctx_next;
+	break;
       }
     }
 
