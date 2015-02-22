@@ -124,17 +124,12 @@ void switch_to_ctx(struct ctx_s *new_ctx){
   assert(new_ctx->ctx_magic == CTX_MAGIC);
 
   
-  /* if(!mega_ctx[currentCor].ring_head & !mega_ctx[currentCor].current_ctx){ */
-  /*   mega_ctx[currentCor].return_ctx = (struct ctx_s*)malloc(sizeof(struct ctx_s)); */
-  /*   mega_ctx[currentCor].return_ctx->ctx_magic = CTX_MAGIC; */
-  /*   __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].return_ctx->ctx_rsp)); */
-  /*   __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].return_ctx->ctx_rbp)); */
-  /* } else { */
-  /*   __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rsp)); */
-  /*   __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rbp)); */
-  /* } */
-  /* if we have a current context... basically, if this is not the first context we initialise, we need to save its rueetn state */
-  if(mega_ctx[currentCor].current_ctx) {
+  if(!mega_ctx[currentCor].ring_head & !mega_ctx[currentCor].current_ctx){
+    mega_ctx[currentCor].return_ctx = (struct ctx_s*)malloc(sizeof(struct ctx_s));
+    mega_ctx[currentCor].return_ctx->ctx_magic = CTX_MAGIC;
+    __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].return_ctx->ctx_rsp));
+    __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].return_ctx->ctx_rbp));
+  } else {
     __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rsp));
     __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rbp));
   }
