@@ -134,7 +134,7 @@ void switch_to_ctx(struct ctx_s *new_ctx){
   assert(new_ctx != NULL);
   assert(new_ctx->ctx_magic == CTX_MAGIC);
 
-  
+  /* if we have not set a context, we initialise the return adress where we are supposed to go */  
   if(!mega_ctx[currentCor].ring_head & !mega_ctx[currentCor].current_ctx){
     mega_ctx[currentCor].return_ctx = (struct ctx_s*)malloc(sizeof(struct ctx_s));
     mega_ctx[currentCor].return_ctx->ctx_magic = CTX_MAGIC;
@@ -210,7 +210,6 @@ void yield(){
       /* if the context we are looking at was finished, we have to kill it */
       if(ctx->ctx_state == CTX_END){
         /* ctx = ctx->ctx_next;	 */
-	printf("Deleting ctx \n");
 	mega_ctx[currentCor].current_ctx->ctx_next = ctx->ctx_next;
 	free(ctx->ctx_stack);
 	free(ctx);
@@ -218,6 +217,7 @@ void yield(){
 	if(mega_ctx[currentCor].ring_head == ctx) 
 	  mega_ctx[currentCor].ring_head = mega_ctx[currentCor].current_ctx;
 	ctx = mega_ctx[currentCor].current_ctx->ctx_next;
+	mega_ctx[currentCor].nb_ctx--;
 	break;
       }
     }

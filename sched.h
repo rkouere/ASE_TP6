@@ -83,7 +83,7 @@ struct mega_ctx_s {
   unsigned int nb_ctx;
 } ;
 
-/* we initialise one contexte per core */
+/* we alocate one contexte per core */
 struct mega_ctx_s mega_ctx[CORE_NCORE];
 
 
