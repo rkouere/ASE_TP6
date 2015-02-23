@@ -24,9 +24,9 @@ LIBS    = -lhardware
 ###------------------------------
 ### Main targets 
 ###------------------------------------------------------------
-BINARIES= multiCore
+BINARIES= shell_mc
 OBJECTS	= $(addsuffix .o,\
-	hw sched)
+	hw sched shell_mc)
 # hw sched drive mbr vol super tools mount inode ifile file dir)
 
 
@@ -65,6 +65,8 @@ dfs: dfs.o $(OBJECTS)
 test: test.o $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBDIR) $(LIBS)
 shell:shell.o  $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBDIR) $(LIBS
+shell_mc:shell_mc.o  $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBDIR) $(LIBS)
 
 
@@ -108,6 +110,7 @@ vm.o: vm.c drive.h hw.h mbr.h colors.h mount.h sched.h
 vol.o: vol.c vol.h drive.h hw.h mbr.h colors.h sched.h
 sched.o: sched.c sched.h hw.h
 hw.o:hw.c hw.h
+shell_mc.o: shell_mc.c hw.h sched.h
 
 
 %.o: %.c

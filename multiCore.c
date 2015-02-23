@@ -33,14 +33,10 @@ void f_ping(void *args)
   int cor = _in(CORE_ID);
   i = 50;
   while(i > 0) {
-    printf(BOLDCYAN"on core %d\n", cor);
-    printf("A");
     for(y = 0; y < 100000; y++){}; 
-    printf("B");
-    printf("C");
     i--;
   }
-  printf(BOLDCYAN"ping has finished %d\n", cor);
+
 }
 
 void f_pang(void *args)
@@ -49,15 +45,10 @@ void f_pang(void *args)
   int cor = _in(CORE_ID);
   i = 10;
   while(i > 0) {
-    printf(BOLDCYAN"on core %d\n", cor);
-    printf("X");
     for(y = 0; y < 100000; y++){}; 
-    printf("Y");
-    printf("Z");
-    printf("\n");
     i--;
   }
-  printf(BOLDCYAN"pang has finished %d\n", cor);
+
 }
 
 void f_pong(void *args)
@@ -66,15 +57,15 @@ void f_pong(void *args)
   int cor = _in(CORE_ID);
   i = 100;
   while(i > 0) {
-    printf(BOLDCYAN"on core %d\n", cor);
-    printf("1");
+
+
     for(y = 0; y < 100000; y++){}; 
-    printf("2");
-    printf("3");
+
+
     i--;
   }
 
-  printf(BOLDCYAN"pong has finished %d\n", cor);
+
 }
 void f_prong(void *args)
 {
@@ -82,15 +73,12 @@ void f_prong(void *args)
   int cor = _in(CORE_ID);
   i = 100;
   while(i > 0) {
-    printf(BOLDCYAN" on core %d\n", cor);
-    printf("$$");
     for(y = 0; y < 100000; y++){}; 
-    printf("%%");
-    printf("!!");
+
     i--;
   }
 
-  printf(BOLDCYAN"pong has finished %d\n", cor);
+
 }
 
 static void

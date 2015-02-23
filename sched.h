@@ -108,6 +108,7 @@ void print_pile_ctx();
 void start();
 void switch_to_ctx(struct ctx_s *new_ctx);
 void yield();
+void listJob();
 void wait_disque();
 void reset_ctx_disque();
 void sem_init(struct sem_s *sem, unsigned int val, char* name);

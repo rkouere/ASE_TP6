@@ -24,6 +24,27 @@ void print_pile_ctx(){
   irq_enable();
 }
 
+void listJob(){
+  int i;
+  unsigned int j;
+  struct mega_ctx_s *mctx;
+  struct ctx_s *ctx;
+  /* Boucle parcourant les processeurs */
+  for(i=0;i<CORE_NCORE;i++){
+    mctx = &mega_ctx[i];
+    printf(BOLDGREEN"\nProcésseur n°%d,%d contexts: \n"RESET,i,mctx->nb_ctx);
+    if(!mctx->ring_head){/*Si aucune tache sur ce processeurs on affiche ce message et passe au processeur suivant*/
+      printf(BOLDWHITE"\tAucun context sur ce processeur\n"RESET);
+      continue;
+    }
+    ctx = mctx->ring_head;
+    /*Boucle parcourant les contexts de la ring_head*/
+    for(j=0;j<mctx->nb_ctx;j++){
+      printf("\t%s\n",ctx->ctx_name);
+      ctx= ctx->ctx_next;
+    }
+  }
+}
 
 int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * args,char *name){
 
@@ -94,7 +115,7 @@ void del_ctx(struct ctx_s *ctx){
     print_ctx(ctx);
 
   if(DEBUG)
-    printf(RED"ADDRESS : %p \n"RESET,ctx);
+    printf(RED"ADDRESS : %p \n"RESET,(void *)ctx);
 
   /* si il n'y a qu'un seul context, on libere l'espace memoire de la stack et le pointeur de la structure */
   /* if(ctx == ctx->ctx_next){ */
