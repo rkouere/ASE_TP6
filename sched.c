@@ -142,41 +142,6 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
 }
 
 
-
-<<<<<<< HEAD
-
-
-
-void del_ctx(struct ctx_s *ctx){
-  irq_disable();
-  int currentCor = _in(CORE_ID);
-  assert(ctx != NULL);
-  if(DEBUG)
-    printf(RED"Deleting : "RESET);
-
-  if(DEBUG)
-    print_ctx(ctx);
-
-  if(DEBUG)
-    printf(RED"ADDRESS : %p \n"RESET,(void *)ctx);
-
-  /* si il n'y a qu'un seul context, on libere l'espace memoire de la stack et le pointeur de la structure */
-  /* if(ctx == ctx->ctx_next){ */
-  /*   free(ctx->ctx_stack); */
-  /*   free(ctx); */
-  /* } else { */
-  /*   struct ctx_s *suivant = ctx->ctx_next; */
-  /*   struct ctx_s *precedent = ctx; */
-  /*   while(precedent->ctx_next != ctx ) */
-  /*     precedent = precedent->ctx_next; */
-  /*   precedent->ctx_next = suivant; */
-  /*   ctx = NULL; */
-  /* } */
-
-}
-
-=======
->>>>>>> bc836ec03bb161f2c1a4d5e318a45079e4e22c07
 void start(){
   printf("Entering in start for schedule");
   yield();

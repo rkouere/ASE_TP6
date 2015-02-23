@@ -215,7 +215,7 @@ init_hard() {
   _out(TIMER_ALARM, 0xFFFFFFFF - 100);
   irq_enable();
 
-
+  init();
   /* on doit lancer cette fonction car sinon on sortirait driectement du prog */
 
   return 0;
@@ -231,8 +231,8 @@ main(int argc, char **argv)
   create_ctx(16380, &f_ping, (void*) NULL, "ping1");
   create_ctx(16380, &f_ping, (void*) NULL, "ping2");
 
-  loop();
-
+  create_ctx(16380, &loop, (void*) NULL, "loop");
+  init();
   /* abnormal end of dialog (cause EOF for xample) */
   do_xit();
 
