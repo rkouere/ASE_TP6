@@ -13,15 +13,3 @@ Attente active qui utilise les registre corelock et coreunlock
 2. Proteger les acès aux liste de contexte (à chaque fois que l'on accède à une de ces listes, on prend le verous et on le relache ensuite)
 
 3. Echanger des contextes en tre deux listes.
-variable a proteger : 
-current_context
-liste des contexte locaux (ctx_list[])
-il serait interessant de savoir combien on a de contexte locaux
-
-Il faut aussi que l'on ait un retour  main_core (quand on a plus de contexte, il faut que ce soit propred).
-main-core(): elle doit essayer de voler la charge 
-ex : voler la moiti des contextes du coeur le plus charg.
--> prendre le verou
-
-Attention : 
-il ne faut pas que current ne soit pas celui qu'on est en train de voler
