@@ -212,10 +212,10 @@ init_hard() {
 
   /* we set-up the clock */
   _out(TIMER_PARAM, 128+64+32+8);
-  _out(TIMER_ALARM, 0xFFFFFFFF - 100);
+  _out(TIMER_ALARM, TIMER);
   irq_enable();
 
-  init();
+
   /* on doit lancer cette fonction car sinon on sortirait driectement du prog */
 
   return 0;
@@ -231,8 +231,8 @@ main(int argc, char **argv)
   create_ctx(16380, &f_ping, (void*) NULL, "ping1");
   create_ctx(16380, &f_ping, (void*) NULL, "ping2");
 
-  create_ctx(16380, &loop, (void*) NULL, "loop");
-  init();
+  /* create_ctx(16380, loop, (void*) NULL, "loop"); */
+  loop();
   /* abnormal end of dialog (cause EOF for xample) */
   do_xit();
 

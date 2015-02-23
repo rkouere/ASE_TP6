@@ -131,9 +131,9 @@ main() {
   create_ctx(16380, &f_prong, (void*) NULL, "prong");
 
   /* on dit que l'on veut mettre en route 6 coeur */
-  
+
   _out(CORE_STATUS, 0x3);
-  
+
   /* the fonction that is called at each interuption from the clock */
   IRQVECTOR[TIMER_IRQ] = yield;
 
@@ -145,7 +145,7 @@ main() {
 
   /* on doit lancer cette fonction car sinon on sortirait driectement du prog */
   yield();
-  
+
   return 0;
 }
 
