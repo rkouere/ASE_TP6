@@ -1,4 +1,5 @@
 Implémenter une commande cat /proc/stat
+Il faut juste faire un 
 
 Equilibre de la charge
 1. Implémenter un verou klock (kernel lock).
