@@ -2,8 +2,16 @@
 ##############################################################################
 
 #multicoeur
-ROOTDIR=/home/m1/echallier/fac/m2/ASE++/ASE_TP6/lib_hd
+
+#ROOTDIR=/home/m1/echallier/fac/m2/ASE++/ASE_TP5/lib_hd
+# ROOTDIR=/lib_hd
+
+#mahieddine
+#ROOTDIR=/home/mahieddine/Documents/cours/M1S2/ASEa/libhardware
+ROOTDIR=/home/mahieddine/Documents/cours/M1S2/ASEa/TP2/lib_hd
+# ROOTDIR=/home/m1/echallier/fac/m2/ASE++/ASE_TP6/lib_hd
 #ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
+
 
 
 CC	= gcc
@@ -12,7 +20,7 @@ CFLAGS	= -Wall -ansi -pedantic
 CFLAGS  += -g -m32
 CFLAGS  += -std=iso9899:1999
 CFLAGS += -pthread
-#CFLAGS += -lpthread
+# CFLAGS += -lpthread
 
 LIBDIR  = -L$(ROOTDIR)/lib
 INCDIR  = -I$(ROOTDIR)/include
@@ -21,9 +29,9 @@ LIBS    = -lhardware
 ###------------------------------
 ### Main targets 
 ###------------------------------------------------------------
-BINARIES= multiCore
+BINARIES= shell_mc
 OBJECTS	= $(addsuffix .o,\
-	hw sched)
+	hw sched shell_mc)
 # hw sched drive mbr vol super tools mount inode ifile file dir)
 
 
@@ -62,6 +70,8 @@ dfs: dfs.o $(OBJECTS)
 test: test.o $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBDIR) $(LIBS)
 shell:shell.o  $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBDIR) $(LIBS
+shell_mc:shell_mc.o  $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBDIR) $(LIBS)
 
 
@@ -105,6 +115,7 @@ vm.o: vm.c drive.h hw.h mbr.h colors.h mount.h sched.h
 vol.o: vol.c vol.h drive.h hw.h mbr.h colors.h sched.h
 sched.o: sched.c sched.h hw.h
 hw.o:hw.c hw.h
+shell_mc.o: shell_mc.c hw.h sched.h
 
 
 %.o: %.c
