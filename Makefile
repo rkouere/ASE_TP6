@@ -3,11 +3,11 @@
 
 #multicoeur
 #ROOTDIR=/home/m1/echallier/fac/m2/ASE++/ASE_TP5/lib_hd
-ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
+# ROOTDIR=/lib_hd
 
 #mahieddine
 #ROOTDIR=/home/mahieddine/Documents/cours/M1S2/ASEa/libhardware
-#ROOTDIR=/home/mahieddine/Documents/cours/M1S2/ASEa/lib32
+ROOTDIR=/home/mahieddine/Documents/cours/M1S2/ASEa/TP2/lib_hd
 
 CC	= gcc
 CFLAGS	= -Wall -ansi -pedantic
@@ -15,7 +15,7 @@ CFLAGS	= -Wall -ansi -pedantic
 CFLAGS  += -g -m32
 CFLAGS  += -std=iso9899:1999
 CFLAGS += -pthread
-#CFLAGS += -lpthread
+# CFLAGS += -lpthread
 
 LIBDIR  = -L$(ROOTDIR)/lib
 INCDIR  = -I$(ROOTDIR)/include
