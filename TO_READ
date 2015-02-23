@@ -25,3 +25,9 @@ ex : voler la moiti des contextes du coeur le plus charg.
 
 Attention : 
 il ne faut pas que current ne soit pas celui qu'on est en train de voler
+
+
+A FAIRE :
+changer dans init le fait que l'on veut prendre le context avec le plus de ctx mais seulement si il en a plus de 1
+si il en a plus de 1, on lui prend un context (on verifie que ce n'est pas son context courant. Si c'est le cas, on en prend un autre) et on le rajoute  la boucle du coeur.
+Ensuite : on prend plus de un context et on fait en sorte de les placer ou il faut
