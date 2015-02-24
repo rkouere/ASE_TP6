@@ -196,23 +196,29 @@ init_hard() {
     IRQVECTOR[i] = empty_it;
 
   /* c'est la fonction appellé quand on lance le coeur */
-  IRQVECTOR[0] = init;
+  IRQVECTOR[0] = &init;
 
   /* on initialise le rand robin */
   randRob = 0;
-
+  for(i=0;i<CORE_NCORE;i++){
+    mega_ctx[i].current_ctx = (struct ctx_s *) 0;
+    mega_ctx[i].ring_head = (struct ctx_s *) 0;
+    mega_ctx[i].return_ctx = (struct ctx_s *) 0;
+    mega_ctx[i].ctx_disque = (struct ctx_s *) 0;
+    mega_ctx[i].nb_ctx = 0;
+  }
 
 
    /* on dit que l'on veut mettre en route 6 coeur */
 
-  _out(CORE_STATUS, 0x3);
-
-  /* the fonction that is called at each interuption from the clock */
-  IRQVECTOR[TIMER_IRQ] = yield;
-
-  /* we set-up the clock */
+  _out(CORE_STATUS, CORE_NCORE);
   _out(TIMER_PARAM, 128+64+32+8);
   _out(TIMER_ALARM, TIMER);
+
+  /* the fonction that is called at each interuption from the clock */
+  IRQVECTOR[TIMER_IRQ] = &yield;
+
+  /* we set-up the clock */
   irq_enable();
 
 
@@ -227,12 +233,10 @@ main(int argc, char **argv)
 {
   /* dialog with user */
 
-  init_hard();
-  create_ctx(16380, &f_ping, (void*) NULL, "ping1");
-  create_ctx(16380, &f_ping, (void*) NULL, "ping2");
 
-  /* create_ctx(16380, loop, (void*) NULL, "loop"); */
-  loop();
+  init_hard();
+  create_ctx(16380, &loop, (void*) NULL, "loop");
+
   /* abnormal end of dialog (cause EOF for xample) */
   do_xit();
 

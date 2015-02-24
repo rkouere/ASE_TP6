@@ -95,8 +95,8 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
   ctx->ctx_arg = args;
 
   /* QUESTION : comment peut-on initialiser le rsp et le rbp ici car nous n'avons pas encore sauvegardé les contexte ? */
-  ctx->ctx_rsp = &(ctx->ctx_stack[stack_size-16]);
-  ctx->ctx_rbp = ctx->ctx_rsp;
+  /* ctx->ctx_rsp = &(ctx->ctx_stack[stack_size-16]); */
+  /* ctx->ctx_rbp = ctx->ctx_rsp; */
   /* fin de ma question */
   ctx->ctx_magic = CTX_MAGIC;
   ctx->ctx_next = ctx;
@@ -104,7 +104,7 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
 
   if(DEBUG)
     printf(BOLDBLUE"\n%d ) creating ctx %s on \n"RESET,mega_ctx[corToInit].nb_ctx,name);
-  
+
   irq_enable();
   kunlock();
   return 0;
