@@ -97,12 +97,36 @@ void irqCoucou() {
 }
 
 void init() {
-  int cor = _in(CORE_ID);
+  int cor = _in(CORE_ID), i;
+  int cor_with_max_ctx; /* the cor with the maximum of ctx */
+  /* used to find the number of context */
+  /* I didn't find another way to deal with it */
+  int nb_max_ctx; 
+
   _mask(1);  
   printf("coucou sur coeur avant yield sur coeur %d\n", cor);
+  printf("CORE_NCORE = %d\n", CORE_NCORE);
   yield();
-  printf("coucou sur coeur après yield sur coeur %d\n", cor);
+  /* we have finished the contexts we initialised, now, we need to steal some context from the other core */
+  while(1) {
+    cor_with_max_ctx = -1;
+    nb_max_ctx = 1; /* we the core only has one ctx, there is no point to steal it */
+    /* TO DELETE : loop to wait and let me print things in a way that is manageable */
+    for(i = 0; i < 1000000; i++) {}
+  /* we are going to go through all the current cores and check wich one has the highest number of cor */
+    for(i = 0; i < CORE_NCORE; i++) {
+      if(mega_ctx[i].nb_ctx > nb_max_ctx) {
+	cor_with_max_ctx = i;
+	nb_max_ctx = mega_ctx[i].nb_ctx;
+      }
+	
+      printf(BOLDRED"cor %d a %d ctx\n"RESET, i, mega_ctx[i].nb_ctx);
+    }
+
+  }
 }
+
+
 int
 main() {
 
@@ -113,6 +137,15 @@ main() {
   if(init_hardware("core.ini") == 0) {
     fprintf(stderr, "Error in hardware initialization\n");
     exit(EXIT_FAILURE);
+  }
+
+  /* we initialse each of ctx of each core */
+  for(i = 0; i < CORE_NCORE; i++) {
+    mega_ctx[i].current_ctx = NULL;
+    mega_ctx[i].ring_head = NULL;
+    mega_ctx[i].return_ctx = NULL;
+    mega_ctx[i].ctx_disque = NULL;
+    mega_ctx[i].nb_ctx= 0;
   }
 
   /* Interreupt handlers */
@@ -129,63 +162,34 @@ main() {
   create_ctx(16380, &f_pang, (void*) NULL, "pang");
   create_ctx(16380, &f_pong, (void*) NULL, "pong");
   create_ctx(16380, &f_prong, (void*) NULL, "prong");
+  create_ctx(16380, &f_prong, (void*) NULL, "prong2");
 
+<<<<<<< HEAD
+  /* on dit que l'on veut mettre en route 3 coeur */
+  
+  _out(CORE_STATUS, CORE_NCORE);
+  
+=======
   /* on dit que l'on veut mettre en route 6 coeur */
 
   _out(CORE_STATUS, 0x3);
 
+>>>>>>> 1d061113502a3b1284f20c5f9d9cd03e0f28ef89
   /* the fonction that is called at each interuption from the clock */
   IRQVECTOR[TIMER_IRQ] = yield;
 
   /* we set-up the clock */
   _out(TIMER_PARAM, 128+64+32+8);
-  _out(TIMER_ALARM, 0xFFFFFFFF - 100);
+  _out(TIMER_ALARM, TIMER);
   irq_enable();
 
 
   /* on doit lancer cette fonction car sinon on sortirait driectement du prog */
+<<<<<<< HEAD
+  init();
+=======
   yield();
 
+>>>>>>> 1d061113502a3b1284f20c5f9d9cd03e0f28ef89
   return 0;
 }
-
-
-
-
-
-
-
-
-
-
-void ex3() {
-  int i = 0;
-  int cor = _in(CORE_ID);
-  /* Allows all IT */
-  _mask(1);  
-  while(1) {
-    i = 0;
-    /* on verifie que le lock est libre. Si c'est le cas, on execute la fonction. Sinon, on attent et on re-essait */
-    if(_in(CORE_LOCK) == 1) {
-      _out(CORE_LOCK, 0x2);
-      printf("[%d] start\n", cor);
-      while(i < 0xFFFFFF) {
-	i++;
-      }
-      printf("[%d] end\n", cor);
-      _out(CORE_UNLOCK, 0x1);
-    }
-    else {
-      while(i < 0xFFFF) {
-	i++;
-      }
-    }
-    i = 0;
-    while(i < 0xFFFF) {
-      i++;
-    }
-
-
-  }
-}
-
