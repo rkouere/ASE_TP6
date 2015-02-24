@@ -20,6 +20,8 @@ CFLAGS	= -Wall -ansi -pedantic
 CFLAGS  += -g -m32
 CFLAGS  += -std=iso9899:1999
 CFLAGS += -pthread
+CFLAGS += -O2
+
 # CFLAGS += -lpthread
 
 LIBDIR  = -L$(ROOTDIR)/lib
