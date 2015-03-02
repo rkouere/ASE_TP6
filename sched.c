@@ -84,9 +84,9 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
     kunlock();
     return 1;
   }
-  int corToInit = randRob%CORE_NCORE;
+  int corToInit = randRob;
 
-  printf(BOLDGREEN"[create_ctx] corToInit = %d\n"RESET, corToInit);
+  printf(BOLDGREEN"[init_ctx] corToInit = %d\n"RESET, corToInit);
 
   ctx->ctx_name = name;
   ctx->ctx_state = CTX_RDY;
@@ -115,8 +115,8 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   irq_disable();
   klock();
   struct ctx_s* new_ctx = (struct ctx_s*) calloc(1,sizeof(struct ctx_s));
-  /* int corToInit = randRob++%CORE_NCORE; */
   int corToInit = randRob++%CORE_NCORE;
+  /* int corToInit = randRob; */
 
   assert(new_ctx);
 
