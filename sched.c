@@ -3,7 +3,7 @@
 
 /* manages locks */
 /* basically, each time we use mega_ctx, we make sure that no other core can change it */
-static void klock() {
+void klock() {
   int i = 0;
   /* we check that the lock is free */
   if(_in(CORE_LOCK) == 1) {
@@ -20,7 +20,7 @@ static void klock() {
 
 }
 
-static void kunlock() {
+void kunlock() {
   _out(CORE_UNLOCK, 0x1);
 }
 
@@ -115,6 +115,7 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   irq_disable();
   klock();
   struct ctx_s* new_ctx = (struct ctx_s*) calloc(1,sizeof(struct ctx_s));
+  /* int corToInit = randRob++%CORE_NCORE; */
   int corToInit = randRob++%CORE_NCORE;
 
   assert(new_ctx);

@@ -114,6 +114,8 @@ void reset_ctx_disque();
 void sem_init(struct sem_s *sem, unsigned int val, char* name);
 void sem_up(struct sem_s *sem);
 void sem_down(struct sem_s *sem);
+void klock();
+void kunlock();
 
 
 
