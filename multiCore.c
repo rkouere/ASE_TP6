@@ -30,8 +30,7 @@ int nbCor = 3;
 void f_ping(void *args)
 {
   int i, y;
-  int cor = _in(CORE_ID);
-  i = 50;
+  i = 5000;
   while(i > 0) {
     for(y = 0; y < 100000; y++){}; 
     i--;
@@ -42,8 +41,7 @@ void f_ping(void *args)
 void f_pang(void *args)
 {
   int i, y;
-  int cor = _in(CORE_ID);
-  i = 10;
+  i = 1000;
   while(i > 0) {
     for(y = 0; y < 100000; y++){}; 
     i--;
@@ -54,14 +52,9 @@ void f_pang(void *args)
 void f_pong(void *args)
 {
   int i, y;
-  int cor = _in(CORE_ID);
-  i = 100;
+  i = 1000;
   while(i > 0) {
-
-
     for(y = 0; y < 100000; y++){}; 
-
-
     i--;
   }
 
@@ -70,15 +63,22 @@ void f_pong(void *args)
 void f_prong(void *args)
 {
   int i, y;
-  int cor = _in(CORE_ID);
-  i = 100;
+  i = 100000000;
   while(i > 0) {
     for(y = 0; y < 100000; y++){}; 
-
     i--;
   }
 
 
+}
+void printYo() {
+  int i = 0;
+  int cor = _in(CORE_ID);
+  while(1) {
+    for(i = 0; i < 10000; i++) {
+      printf("printyo on cor %d\n", cor);
+    }
+  }
 }
 
 static void
@@ -96,34 +96,75 @@ void irqCoucou() {
   _out(TIMER_ALARM, 0xFFFFFFFF - 100);
 }
 
-void init() {
-  int cor = _in(CORE_ID), i;
-  int cor_with_max_ctx; /* the cor with the maximum of ctx */
-  /* used to find the number of context */
-  /* I didn't find another way to deal with it */
-  int nb_max_ctx; 
+void testLoadBalancer() {
+  irq_disable();
+  klock();
 
-  _mask(1);  
-  printf("coucou sur coeur avant yield sur coeur %d\n", cor);
-  printf("CORE_NCORE = %d\n", CORE_NCORE);
-  yield();
-  /* we have finished the contexts we initialised, now, we need to steal some context from the other core */
+  randRob = 0;
+  create_ctx(16380, &printYo, (void*) NULL, "printYo1");
+  randRob = 0;
+  create_ctx(16380, &printYo, (void*) NULL, "printYo2");
+  randRob = 0;
+  create_ctx(16380, &printYo, (void*) NULL, "printYo3");
+  randRob = 0;
+  create_ctx(16380, &printYo, (void*) NULL, "printYo4");
+  randRob = 0;
+  create_ctx(16380, &printYo, (void*) NULL, "printYo5");
+
+  irq_enable();
+  kunlock();
+  
+}
+
+void loadBalancer(int current_cor) {
+  int cor_with_max_ctx; /* the cor with the maximum of ctx */
+  int i;
+
+  /* we have finished the contexts we initialised, now, we need to steal some context from the other cores */
   while(1) {
-    cor_with_max_ctx = -1;
-    nb_max_ctx = 1; /* we the core only has one ctx, there is no point to steal it */
+    /* by default we take the first core as our starting point */
+    cor_with_max_ctx = 0;
     /* TO DELETE : loop to wait and let me print things in a way that is manageable */
     for(i = 0; i < 1000000; i++) {}
-  /* we are going to go through all the current cores and check wich one has the highest number of cor */
-    for(i = 0; i < CORE_NCORE; i++) {
-      if(mega_ctx[i].nb_ctx > nb_max_ctx) {
+    /* we are going to go through all the current cores and check wich one has the highest number of cor */
+    /* note: we start at one because we have already used core number one as our starting point */
+    for(i = 1; i < CORE_NCORE; i++) {
+      if(mega_ctx[i].nb_ctx > mega_ctx[cor_with_max_ctx].nb_ctx) {
 	cor_with_max_ctx = i;
-	nb_max_ctx = mega_ctx[i].nb_ctx;
       }
-	
-      printf(BOLDRED"cor %d a %d ctx\n"RESET, i, mega_ctx[i].nb_ctx);
     }
+    /* we need to make sure that everything we are doing is "safe" */
+    irq_disable();
+    klock();
+    /* we check that the lucky core has more that one task to do (there is no point to steal its only task, poor soul) */
+    /* if it has, we take the next context it was supposed to deal with */
+    if(mega_ctx[cor_with_max_ctx].nb_ctx > 1) {
+      printf(BOLDCYAN"cor %d has taken a context from cor%d\n", current_cor, cor_with_max_ctx);
+      mega_ctx[current_cor].current_ctx = mega_ctx[cor_with_max_ctx].current_ctx->ctx_next;
+      mega_ctx[cor_with_max_ctx].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx->ctx_next;
+      mega_ctx[current_cor].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx;
+    }
+    irq_enable();
+    kunlock();
 
   }
+}
+
+/* this funciton will do two separate things:
+   - start the functions we initiated in the main
+   - "steal" functions from the other cores to balance the workload of each core
+ */
+void init() {
+  int current_cor = _in(CORE_ID);
+
+  _mask(1);  
+  yield();
+  printf(BOLDGREEN"core %d has finished to execute its first contexts. It is now waiting to steal some\n"RESET, current_cor);
+  /* if(current_cor == 0) */
+  /*   testLoadBalancer(); */
+
+  loadBalancer(current_cor);
+
 }
 
 
@@ -162,19 +203,15 @@ main() {
   create_ctx(16380, &f_pang, (void*) NULL, "pang");
   create_ctx(16380, &f_pong, (void*) NULL, "pong");
   create_ctx(16380, &f_prong, (void*) NULL, "prong");
-  create_ctx(16380, &f_prong, (void*) NULL, "prong2");
+  create_ctx(16380, &f_pang, (void*) NULL, "prong2");
 
-<<<<<<< HEAD
   /* on dit que l'on veut mettre en route 3 coeur */
   
-  _out(CORE_STATUS, CORE_NCORE);
+  for(i = 0; i < CORE_NCORE; i++) {
+    printf("le coeur %d a %d contextes\n", i, mega_ctx[i].nb_ctx);
+  }
+  _out(CORE_STATUS, 0x7);
   
-=======
-  /* on dit que l'on veut mettre en route 6 coeur */
-
-  _out(CORE_STATUS, 0x3);
-
->>>>>>> 1d061113502a3b1284f20c5f9d9cd03e0f28ef89
   /* the fonction that is called at each interuption from the clock */
   IRQVECTOR[TIMER_IRQ] = yield;
 
@@ -184,12 +221,9 @@ main() {
   irq_enable();
 
 
-  /* on doit lancer cette fonction car sinon on sortirait driectement du prog */
-<<<<<<< HEAD
   init();
-=======
+  testLoadBalancer();
   yield();
 
->>>>>>> 1d061113502a3b1284f20c5f9d9cd03e0f28ef89
   return 0;
 }
