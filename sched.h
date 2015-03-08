@@ -21,7 +21,7 @@ TP Semaphore, réalisé par Yaker Mahieddine
 #define N 100
 #define TIMER 0xFFFFFFFF - 100
 int next_index,cpt;
-
+int test;
 int randRob; /* used for affecting a context to a core */
 
 typedef void (func_t) (void *);

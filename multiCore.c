@@ -157,7 +157,7 @@ void loadBalancer(int current_cor) {
 void init() {
   int current_cor = _in(CORE_ID);
 
-  _mask(1);  
+  _mask(1);
   yield();
   printf(BOLDGREEN"core %d has finished to execute its first contexts. It is now waiting to steal some\n"RESET, current_cor);
   /* if(current_cor == 0) */
@@ -206,12 +206,11 @@ main() {
   create_ctx(16380, &f_pang, (void*) NULL, "prong2");
 
   /* on dit que l'on veut mettre en route 3 coeur */
-  
   for(i = 0; i < CORE_NCORE; i++) {
     printf("le coeur %d a %d contextes\n", i, mega_ctx[i].nb_ctx);
   }
   _out(CORE_STATUS, 0x7);
-  
+
   /* the fonction that is called at each interuption from the clock */
   IRQVECTOR[TIMER_IRQ] = yield;
 

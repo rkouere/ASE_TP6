@@ -155,7 +155,7 @@ void switch_to_ctx(struct ctx_s *new_ctx){
   assert(new_ctx != NULL);
   assert(new_ctx->ctx_magic == CTX_MAGIC);
 
-  /* if we have not set a context, we initialise the return adress where we are supposed to go */  
+  /* if we have not set a context, we initialise the return adress where we are supposed to go */
   if(!mega_ctx[currentCor].ring_head & !mega_ctx[currentCor].current_ctx){
     mega_ctx[currentCor].return_ctx = (struct ctx_s*)malloc(sizeof(struct ctx_s));
     mega_ctx[currentCor].return_ctx->ctx_magic = CTX_MAGIC;
@@ -170,7 +170,7 @@ void switch_to_ctx(struct ctx_s *new_ctx){
 
   __asm__ ("movl %0, %%esp\n" ::"r"(mega_ctx[currentCor].current_ctx->ctx_rsp));
   __asm__ ("movl %0, %%ebp\n" ::"r"(mega_ctx[currentCor].current_ctx->ctx_rbp));
-  
+
   /* if the current context has not been started, we statrt it */
   if(mega_ctx[currentCor].current_ctx->ctx_state == CTX_RDY){
     mega_ctx[currentCor].current_ctx->ctx_state = CTX_EXQ;
@@ -187,8 +187,10 @@ void switch_to_ctx(struct ctx_s *new_ctx){
 
 
 void yield(){
+
   int currentCor = _in(CORE_ID);
   irq_disable();
+  printf(BOLDMAGENTA"\nje me lance quand test vaut : %d\n"RESET,test);
   klock();
   /* we reinitialise the timer's interuption */
   _out(TIMER_ALARM,TIMER);  /* alarm at next tick (at 0xFFFFFFFF) */

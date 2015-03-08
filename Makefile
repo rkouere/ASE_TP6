@@ -132,7 +132,7 @@ clean:
 realclean: clean 
 	$(RM) vdiskA.bin vdiskB.bin
 totalclean: realclean 
-	$(RM) *.*~
+	$(RM) *.*~ *#*
 
 depend : 
 	$(CC) -MM $(INCDIR) *.c
