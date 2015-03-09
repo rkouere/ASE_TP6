@@ -17,7 +17,7 @@
 #define HDA_IRQ 14
 
 
-#define DEBUG 1
+#define DEBUG 0
 #define FNNAME __func__
 
 

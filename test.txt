@@ -8,13 +8,13 @@ CORE_NCORE = 3
 [1m[31mcor 0 a 1 ctx
 [0m[1m[31mcor 1 a 2 ctx
 [0m[1m[31mcor 2 a 2 ctx
-[0m[1m[36mon core 1
-Xcoucou sur coeur avant yield sur coeur 0
+[0mcoucou sur coeur avant yield sur coeur 0
 CORE_NCORE = 3
 [1m[31mcor 0 a 1 ctx
 [0m[1m[31mcor 1 a 2 ctx
 [0m[1m[31mcor 2 a 2 ctx
-[0m[1m[36mon core 0
+[0m[1m[36mon core 1
+X[1m[36mon core 0
 AYZ
 [1m[36mon core 1
 XBC[1m[36mon core 0
@@ -24,10 +24,10 @@ XBC[1m[36mon core 0
 AYZ
 [1m[36mon core 1
 XBC[1m[36mon core 0
+ABC[1m[36mon core 0
 AYZ
 [1m[36mon core 1
-XBC[1m[36mon core 0
-AYZ
+XYZ
 [1m[36mon core 1
 XBC[1m[36mon core 0
 AYZ

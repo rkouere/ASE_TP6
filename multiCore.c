@@ -23,6 +23,21 @@ Relacher le verou, c'est ecrire dans core unlock.
 
 */
 
+/*
+Poursuivre :
+On a un ordonancement sur une mcahine multicoeur et d'equilibrer la charge sur les coeur.
+Klock protege des structure du noyaux
+maintenant :
+reprendre des sémaphore (producteur/consomateur) et les réimplementer.
+Semaphore : appel depuis un context et possiblement bloquant (=on passe la main à un autre context)
+1. reprendre l'implementaiton semaphore d'ASE et la mettre au multicoeur
+2. implementation "spin-lock"
+-> idée : je suis bloqué, j'attend un tout petit peut et quand j'ai fini j'espere que la ressource est débloqué (car je suis sur un autre coeur).
+-> implémentation : "courte" attente active. On espere que pendant ce temps la, sur un autre coeur, un context progresse et va me liberer.
+-> après l'attente : si ressource OK, tout va bien. Sinon on se bloque.
+!!! cela ne marche que si on est sur un autre coeur.
+ */
+
 
 int nbCor = 3;
 
@@ -63,7 +78,7 @@ void f_pong(void *args)
 void f_prong(void *args)
 {
   int i, y;
-  i = 100000000;
+  i = 100;
   while(i > 0) {
     for(y = 0; y < 100000; y++){}; 
     i--;
@@ -76,6 +91,7 @@ void printYo() {
   int cor = _in(CORE_ID);
   while(1) {
     for(i = 0; i < 10000; i++) {
+      printf("yoyoyoyoyoyoyoyoy\n");
       printf("printyo on cor %d\n", cor);
     }
   }
@@ -128,7 +144,7 @@ void loadBalancer(int current_cor) {
     for(i = 0; i < 1000000; i++) {}
     /* we are going to go through all the current cores and check wich one has the highest number of cor */
     /* note: we start at one because we have already used core number one as our starting point */
-    for(i = 1; i < CORE_NCORE; i++) {
+    for(i = 0; i < CORE_NCORE; i++) {
       if(mega_ctx[i].nb_ctx > mega_ctx[cor_with_max_ctx].nb_ctx) {
 	cor_with_max_ctx = i;
       }
@@ -139,10 +155,11 @@ void loadBalancer(int current_cor) {
     /* we check that the lucky core has more that one task to do (there is no point to steal its only task, poor soul) */
     /* if it has, we take the next context it was supposed to deal with */
     if(mega_ctx[cor_with_max_ctx].nb_ctx > 1) {
-      printf(BOLDCYAN"cor %d has taken a context from cor%d\n", current_cor, cor_with_max_ctx);
+      printf(BOLDCYAN"cor %d has taken a context from cor %d\n", current_cor, cor_with_max_ctx);
       mega_ctx[current_cor].current_ctx = mega_ctx[cor_with_max_ctx].current_ctx->ctx_next;
       mega_ctx[cor_with_max_ctx].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx->ctx_next;
       mega_ctx[current_cor].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx;
+      yield();
     }
     irq_enable();
     kunlock();
