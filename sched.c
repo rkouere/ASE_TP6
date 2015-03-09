@@ -190,7 +190,6 @@ void yield(){
 
   int currentCor = _in(CORE_ID);
   irq_disable();
-  printf(BOLDMAGENTA"\nje me lance quand test vaut : %d\n"RESET,test);
   klock();
   /* we reinitialise the timer's interuption */
   _out(TIMER_ALARM,TIMER);  /* alarm at next tick (at 0xFFFFFFFF) */
@@ -205,9 +204,11 @@ void yield(){
       print_ctx(mega_ctx[currentCor].ring_head);
     printf(GREEN"\n======================\n"RESET);
     print_pile_ctx();
-
   }
 
+  if(mega_ctx[currentCor].ring_head == NULL) {
+    return;
+  }
   /* if the current context of the thread has no jobs to do */
   if(!mega_ctx[currentCor].current_ctx){
     mega_ctx[currentCor].current_ctx = mega_ctx[currentCor].ring_head;
