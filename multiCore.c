@@ -113,8 +113,6 @@ void irqCoucou() {
 }
 
 void testLoadBalancer() {
-  irq_disable();
-  klock();
 
   randRob = 0;
   create_ctx(16380, &printYo, (void*) NULL, "printYo1");
@@ -127,10 +125,18 @@ void testLoadBalancer() {
   randRob = 0;
   create_ctx(16380, &printYo, (void*) NULL, "printYo5");
 
-  irq_enable();
-  kunlock();
   
 }
+
+void
+loop()
+{
+  while (1) {
+    printf("> \n");
+  }
+
+}
+
 
 void loadBalancer(int current_cor) {
   int cor_with_max_ctx; /* the cor with the maximum of ctx */
@@ -141,7 +147,9 @@ void loadBalancer(int current_cor) {
     /* by default we take the first core as our starting point */
     cor_with_max_ctx = 0;
     /* TO DELETE : loop to wait and let me print things in a way that is manageable */
-    for(i = 0; i < 1000000; i++) {}
+    for(i = 0; i < 3000000000; i++) {
+    }
+    /* printf("cor %d is waiting\n", current_cor); */
     /* we are going to go through all the current cores and check wich one has the highest number of cor */
     /* note: we start at one because we have already used core number one as our starting point */
     for(i = 0; i < CORE_NCORE; i++) {
@@ -150,8 +158,8 @@ void loadBalancer(int current_cor) {
       }
     }
     /* we need to make sure that everything we are doing is "safe" */
-    irq_disable();
-    klock();
+    /* irq_disable(); */
+    /* klock(); */
     /* we check that the lucky core has more that one task to do (there is no point to steal its only task, poor soul) */
     /* if it has, we take the next context it was supposed to deal with */
     if(mega_ctx[cor_with_max_ctx].nb_ctx > 1) {
@@ -159,10 +167,15 @@ void loadBalancer(int current_cor) {
       mega_ctx[current_cor].current_ctx = mega_ctx[cor_with_max_ctx].current_ctx->ctx_next;
       mega_ctx[cor_with_max_ctx].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx->ctx_next;
       mega_ctx[current_cor].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx;
+
+      mega_ctx[current_cor].ring_head = mega_ctx[current_cor].current_ctx;
+
+      /* irq_enable(); */
+      /* kunlock(); */
       yield();
     }
-    irq_enable();
-    kunlock();
+    /* irq_enable(); */
+    /* kunlock(); */
 
   }
 }
@@ -180,7 +193,7 @@ void init() {
   /* if(current_cor == 0) */
   /*   testLoadBalancer(); */
 
-  loadBalancer(current_cor);
+  /* loadBalancer(current_cor); */
 
 }
 
@@ -214,14 +227,8 @@ main() {
   IRQVECTOR[0] = init;
 
   /* on initialise le rand robin */
-  randRob = 0;
-
-  create_ctx(16380, &f_ping, (void*) NULL, "ping");
-  create_ctx(16380, &f_pang, (void*) NULL, "pang");
-  create_ctx(16380, &f_pong, (void*) NULL, "pong");
-  create_ctx(16380, &f_prong, (void*) NULL, "prong");
-  create_ctx(16380, &f_pang, (void*) NULL, "prong2");
-
+  randRob = 1;
+  create_ctx(16380, &loop, (void*) NULL, "loop");
   /* on dit que l'on veut mettre en route 3 coeur */
   for(i = 0; i < CORE_NCORE; i++) {
     printf("le coeur %d a %d contextes\n", i, mega_ctx[i].nb_ctx);
@@ -237,9 +244,9 @@ main() {
   irq_enable();
 
 
-  init();
-  testLoadBalancer();
-  yield();
+  /* init(); */
+  /* testLoadBalancer(); */
+  /* yield(); */
 
   return 0;
 }

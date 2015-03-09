@@ -4,23 +4,32 @@
 /* manages locks */
 /* basically, each time we use mega_ctx, we make sure that no other core can change it */
 void klock() {
-  int i = 0;
-  /* we check that the lock is free */
-  if(_in(CORE_LOCK) == 1) {
-    /* we take the lock */
-    _out(CORE_LOCK, 0x2);
-  }
-  /* if it not free, we wait a bit and retry */
-  else {
-    while(i < 0xFFFF) {
-      i++;
-    }
-    klock();
-  }
+  /* int i = 0; */
+  /* /\* we check that the lock is free *\/ */
 
+  /* if(_in(CORE_LOCK) == 1) { */
+  /*   /\* we take the lock *\/ */
+  /*   printf("CONTNIUE 1\n"); */
+  /*   _out(CORE_LOCK, 0x2); */
+  /*   printf("CONTNIUE2\n"); */
+
+  /* } */
+  /* /\* if it not free, we wait a bit and retry *\/ */
+  /* else { */
+  /*   while(i < 0xFFFF) { */
+  /*     i++; */
+  /*   } */
+  /*   klock(); */
+  /* } */
+  while(_in(CORE_LOCK) != 1);
+  _out(CORE_LOCK, 0x2);
+  printf("klock \n");
+  
 }
 
 void kunlock() {
+  printf("kunlock\n");
+
   _out(CORE_UNLOCK, 0x1);
 }
 
@@ -76,8 +85,6 @@ void listJob(){
 }
 
 int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * args,char *name){
-  irq_disable();
-  klock();
   ctx->ctx_stack = (char*) calloc(stack_size,sizeof(char));
   if ( ctx->ctx_stack == NULL) {
     irq_enable();
@@ -105,8 +112,6 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
   if(DEBUG)
     printf(BOLDBLUE"\n%d ) creating ctx %s on \n"RESET,mega_ctx[corToInit].nb_ctx,name);
 
-  irq_enable();
-  kunlock();
   return 0;
 }
 
@@ -120,14 +125,10 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
 
   assert(new_ctx);
 
-  irq_enable();
-  kunlock();
   if(init_ctx(new_ctx, size, f, args ,name)){ 
     /* error */ 
     return 1; 
   }
-  irq_disable();
-  klock();
   /* if this is the first ctx that is initialised, we initialise the ring_head */
   if(!mega_ctx[corToInit].ring_head){
     mega_ctx[corToInit].ring_head = new_ctx;
@@ -152,6 +153,9 @@ void start(){
 
 void switch_to_ctx(struct ctx_s *new_ctx){
   int currentCor = _in(CORE_ID);
+  irq_disable();
+  klock();
+
   assert(new_ctx != NULL);
   assert(new_ctx->ctx_magic == CTX_MAGIC);
 
@@ -175,8 +179,10 @@ void switch_to_ctx(struct ctx_s *new_ctx){
   if(mega_ctx[currentCor].current_ctx->ctx_state == CTX_RDY){
     mega_ctx[currentCor].current_ctx->ctx_state = CTX_EXQ;
     irq_enable();
+    kunlock();
     (*mega_ctx[currentCor].current_ctx->ctx_f)(mega_ctx[currentCor].current_ctx->ctx_arg);
-    irq_disable();
+    /* irq_disable(); */
+    /* klock(); */
     mega_ctx[currentCor].current_ctx->ctx_state = CTX_END;
     yield();
   }
@@ -206,9 +212,13 @@ void yield(){
     print_pile_ctx();
   }
 
+  /* we check that we initialised a context before */
   if(mega_ctx[currentCor].ring_head == NULL) {
+    irq_enable();
+    kunlock();
     return;
   }
+
   /* if the current context of the thread has no jobs to do */
   if(!mega_ctx[currentCor].current_ctx){
     mega_ctx[currentCor].current_ctx = mega_ctx[currentCor].ring_head;
