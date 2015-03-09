@@ -246,7 +246,7 @@ main() {
 
   init();
   /* testLoadBalancer(); */
-  yield();
+  /* yield(); */
 
   return 0;
 }

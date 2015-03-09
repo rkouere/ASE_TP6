@@ -1,6 +1,19 @@
 #include "sched.h"
 
 
+/* rendu
+Pour chaque points dans chaque scéances :
+- ce que l'on a fait
+- ce qui marche
+- ce qui ne marche pas
+- explicaiton de ce que notre exemple fait
+
+ */
+
+
+
+
+
 /* manages locks */
 /* basically, each time we use mega_ctx, we make sure that no other core can change it */
 void klock() {
@@ -23,13 +36,12 @@ void klock() {
   /* } */
   while(_in(CORE_LOCK) != 1);
   _out(CORE_LOCK, 0x2);
-  printf("klock \n");
+  /* printf("klock \n"); */
   
 }
 
 void kunlock() {
-  printf("kunlock\n");
-
+  /* printf("kunlock\n"); */
   _out(CORE_UNLOCK, 0x1);
 }
 
@@ -70,13 +82,13 @@ void listJob(){
   /* Boucle parcourant les processeurs */
   for(i=0;i<CORE_NCORE;i++){
     mctx = &mega_ctx[i];
-    printf(BOLDGREEN"\nProcésseur n°%d,%d contexts: \n"RESET,i,mctx->nb_ctx);
-    if(!mctx->ring_head){/*Si aucune tache sur ce processeurs on affiche ce message et passe au processeur suivant*/
+    printf(BOLDGREEN"\nProcesseur n°%d,%d contexts: \n"RESET,i,mctx->nb_ctx);
+    if(!mctx->nb_ctx){/*Si aucune tache sur ce processeurs on affiche ce message et passe au processeur suivant*/
       printf(BOLDWHITE"\tAucun context sur ce processeur\n"RESET);
       continue;
     }
     ctx = mctx->ring_head;
-    /*Boucle parcourant les contexts de la ring_head*/
+    /* Boucle parcourant les contexts de la ring_head */
     for(j=0;j<mctx->nb_ctx;j++){
       printf("\t%s\n",ctx->ctx_name);
       ctx= ctx->ctx_next;
@@ -91,7 +103,7 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
     kunlock();
     return 1;
   }
-  int corToInit = randRob;
+  int corToInit = randRob%CORE_NCORE;
 
   printf(BOLDGREEN"[init_ctx] corToInit = %d\n"RESET, corToInit);
 
@@ -107,7 +119,7 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
   /* fin de ma question */
   ctx->ctx_magic = CTX_MAGIC;
   ctx->ctx_next = ctx;
-  mega_ctx[randRob%CORE_NCORE].nb_ctx++;
+  mega_ctx[corToInit].nb_ctx++;
 
   if(DEBUG)
     printf(BOLDBLUE"\n%d ) creating ctx %s on \n"RESET,mega_ctx[corToInit].nb_ctx,name);
@@ -120,7 +132,7 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   irq_disable();
   klock();
   struct ctx_s* new_ctx = (struct ctx_s*) calloc(1,sizeof(struct ctx_s));
-  int corToInit = randRob++%CORE_NCORE;
+  int corToInit = ++randRob%CORE_NCORE;
   /* int corToInit = randRob; */
 
   assert(new_ctx);
@@ -153,8 +165,6 @@ void start(){
 
 void switch_to_ctx(struct ctx_s *new_ctx){
   int currentCor = _in(CORE_ID);
-  irq_disable();
-  klock();
 
   assert(new_ctx != NULL);
   assert(new_ctx->ctx_magic == CTX_MAGIC);
@@ -181,9 +191,11 @@ void switch_to_ctx(struct ctx_s *new_ctx){
     irq_enable();
     kunlock();
     (*mega_ctx[currentCor].current_ctx->ctx_f)(mega_ctx[currentCor].current_ctx->ctx_arg);
-    /* irq_disable(); */
-    /* klock(); */
+    irq_disable();
+    klock();
     mega_ctx[currentCor].current_ctx->ctx_state = CTX_END;
+    irq_enable();
+    kunlock();
     yield();
   }
   kunlock();
@@ -255,10 +267,8 @@ void yield(){
 	break;
       }
     }
-    irq_enable();
-    kunlock();
-
-    switch_to_ctx(ctx);
+    if(mega_ctx[currentCor].nb_ctx != 0)
+      switch_to_ctx(ctx);
   }
 }
 

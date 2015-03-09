@@ -89,7 +89,7 @@ execute(const char *name)
 }
 
 static void
-loop(void)
+loop()
 {
   char name[MAX_CMD_SIZE];
 
@@ -152,11 +152,10 @@ none(unsigned int nb, char cmd[MAX_CMD_SIZE][MAX_CMD_SIZE])
 static
 void f_ping(void *args)
 {
-  int i, y;
-  i = 50;
-  while(i > 0) {
-    for(y = 0; y < 100000; y++){}; 
+  int y/*, i */;
 
+  while(1) {
+    for(y = 0; y < 100000; y++){}; 
   }
 
 }
@@ -164,21 +163,21 @@ void f_ping(void *args)
 static
 void ping(){
   create_ctx(16380, &f_ping, (void*) NULL, "ping");
+  create_ctx(16380, &f_ping, (void*) NULL, "ping2");
+  create_ctx(16380, &f_ping, (void*) NULL, "ping3");
 }
 
 
 void loadBalancer(int current_cor) {
   int cor_with_max_ctx; /* the cor with the maximum of ctx */
   int i;
-
+  if(!DEBUG)
+  printf("load balancer started for cor %d\n", current_cor);
   /* we have finished the contexts we initialised, now, we need to steal some context from the other cores */
   while(1) {
     /* by default we take the first core as our starting point */
     cor_with_max_ctx = 0;
     /* TO DELETE : loop to wait and let me print things in a way that is manageable */
-    for(i = 0; i < 3000000000; i++) {
-    }
-    /* printf("cor %d is waiting\n", current_cor); */
     /* we are going to go through all the current cores and check wich one has the highest number of cor */
     /* note: we start at one because we have already used core number one as our starting point */
     for(i = 0; i < CORE_NCORE; i++) {
@@ -187,24 +186,22 @@ void loadBalancer(int current_cor) {
       }
     }
     /* we need to make sure that everything we are doing is "safe" */
-    /* irq_disable(); */
-    /* klock(); */
+    irq_disable();
+    klock();
     /* we check that the lucky core has more that one task to do (there is no point to steal its only task, poor soul) */
     /* if it has, we take the next context it was supposed to deal with */
     if(mega_ctx[cor_with_max_ctx].nb_ctx > 1) {
-      printf(BOLDCYAN"cor %d has taken a context from cor %d\n", current_cor, cor_with_max_ctx);
-      mega_ctx[current_cor].current_ctx = mega_ctx[cor_with_max_ctx].current_ctx->ctx_next;
-      mega_ctx[cor_with_max_ctx].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx->ctx_next;
-      mega_ctx[current_cor].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx;
+      /* printf(BOLDCYAN"cor %d has taken a context from cor %d\n", current_cor, cor_with_max_ctx); */
+      assert(mega_ctx[cor_with_max_ctx].ring_head->ctx_next);
+      mega_ctx[current_cor].ring_head = mega_ctx[cor_with_max_ctx].ring_head;
+      mega_ctx[cor_with_max_ctx].ring_head = mega_ctx[current_cor].ring_head->ctx_next;
+      mega_ctx[current_cor].ring_head->ctx_next = mega_ctx[current_cor].ring_head;
+      mega_ctx[current_cor].nb_ctx++;
+      mega_ctx[cor_with_max_ctx].nb_ctx--;
 
-      mega_ctx[current_cor].ring_head = mega_ctx[current_cor].current_ctx;
-
-      /* irq_enable(); */
-      /* kunlock(); */
-      yield();
     }
-    /* irq_enable(); */
-    /* kunlock(); */
+    irq_enable();
+    kunlock();
 
   }
 }
@@ -234,7 +231,7 @@ void init() {
   /*   testLoadBalancer(); */
 
   loadBalancer(current_cor);
-
+  /* while(1); */
 }
 
 int
