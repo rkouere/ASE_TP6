@@ -128,15 +128,6 @@ void testLoadBalancer() {
   
 }
 
-void
-loop()
-{
-  while (1) {
-    printf("> \n");
-  }
-
-}
-
 
 void loadBalancer(int current_cor) {
   int cor_with_max_ctx; /* the cor with the maximum of ctx */
@@ -193,7 +184,16 @@ void init() {
   /* if(current_cor == 0) */
   /*   testLoadBalancer(); */
 
-  /* loadBalancer(current_cor); */
+  loadBalancer(current_cor);
+
+}
+
+void
+loop()
+{
+  while (1) {
+    printf("> \n");
+  }
 
 }
 
@@ -227,7 +227,7 @@ main() {
   IRQVECTOR[0] = init;
 
   /* on initialise le rand robin */
-  randRob = 1;
+  randRob = 0;
   create_ctx(16380, &loop, (void*) NULL, "loop");
   /* on dit que l'on veut mettre en route 3 coeur */
   for(i = 0; i < CORE_NCORE; i++) {
@@ -244,9 +244,9 @@ main() {
   irq_enable();
 
 
-  /* init(); */
+  init();
   /* testLoadBalancer(); */
-  /* yield(); */
+  yield();
 
   return 0;
 }
