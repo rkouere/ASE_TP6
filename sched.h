@@ -19,7 +19,6 @@ TP Semaphore, réalisé par Yaker Mahieddine
 
 #define LOOP 1000000000
 #define N 100
-#define TIMER 0xFFFFFFFF - 100
 int next_index,cpt;
 int test;
 int randRob; /* used for affecting a context to a core */

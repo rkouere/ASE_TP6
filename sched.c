@@ -99,13 +99,11 @@ void listJob(){
 int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * args,char *name){
   ctx->ctx_stack = (char*) calloc(stack_size,sizeof(char));
   if ( ctx->ctx_stack == NULL) {
-    irq_enable();
-    kunlock();
     return 1;
   }
   int corToInit = randRob%CORE_NCORE;
 
-  printf(BOLDGREEN"[init_ctx] corToInit = %d\n"RESET, corToInit);
+  printf(BOLDGREEN"[init_ctx] corToInit = %d, %s\n"RESET, corToInit, name);
 
   ctx->ctx_name = name;
   ctx->ctx_state = CTX_RDY;
@@ -196,7 +194,7 @@ void switch_to_ctx(struct ctx_s *new_ctx){
     mega_ctx[currentCor].current_ctx->ctx_state = CTX_END;
     irq_enable();
     kunlock();
-    yield();
+    /* yield(); */
   }
   kunlock();
   irq_enable();
@@ -253,12 +251,20 @@ void yield(){
         ctx = ctx->ctx_next;
         continue;
       }
+      /* if there are no more contexts to deal with */
+      if(mega_ctx[currentCor].nb_ctx == 0){
+	irq_enable();
+	kunlock();
+      	return;
+      }
       /* if the context we are looking at was finished, we have to kill it */
       if(ctx->ctx_state == CTX_END){
-        /* ctx = ctx->ctx_next;	 */
+        ctx = ctx->ctx_next;
 	mega_ctx[currentCor].current_ctx->ctx_next = ctx->ctx_next;
 	free(ctx->ctx_stack);
 	free(ctx);
+	/* si il n'y a plus de contexte */
+	
 	/* si on est en tete de liste */
 	if(mega_ctx[currentCor].ring_head == ctx) 
 	  mega_ctx[currentCor].ring_head = mega_ctx[currentCor].current_ctx;
@@ -267,8 +273,8 @@ void yield(){
 	break;
       }
     }
-    if(mega_ctx[currentCor].nb_ctx != 0)
-      switch_to_ctx(ctx);
+    switch_to_ctx(ctx);
+    
   }
 }
 
