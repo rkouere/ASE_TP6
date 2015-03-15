@@ -206,11 +206,8 @@ void yield(){
 
   int currentCor = _in(CORE_ID);
   irq_disable();
-<<<<<<< HEAD
 
   _out(TIMER_ALARM,TIMER);  /* alarm at next tick (at 0xFFFFFFFF) */
-=======
->>>>>>> 69860409d1050032fc9e0ed772559c43e4901470
   klock();
   /* we reinitialise the timer's interuption */
 
