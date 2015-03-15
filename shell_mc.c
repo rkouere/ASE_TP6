@@ -92,7 +92,7 @@ static void
 loop(void)
 {
   char name[MAX_CMD_SIZE];
-
+  
   while (printf("shell_mc :|->  "), fgets (name, MAX_CMD_SIZE, stdin) != NULL) 
     execute(name) ;
 
@@ -180,7 +180,7 @@ void loadBalancer(int current_cor) {
     for(i = 0; i < 1000000; i++) {}
     /* we are going to go through all the current cores and check wich one has the highest number of cor */
     /* note: we start at one because we have already used core number one as our starting point */
-    for(i = 1; i < CORE_NCORE; i++) {
+    for(i = 0; i < CORE_NCORE; i++) {
       if(mega_ctx[i].nb_ctx > mega_ctx[cor_with_max_ctx].nb_ctx) {
 	cor_with_max_ctx = i;
       }
@@ -195,6 +195,7 @@ void loadBalancer(int current_cor) {
       mega_ctx[current_cor].current_ctx = mega_ctx[cor_with_max_ctx].current_ctx->ctx_next;
       mega_ctx[cor_with_max_ctx].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx->ctx_next;
       mega_ctx[current_cor].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx;
+      yield();
     }
     irq_enable();
     kunlock();
@@ -208,7 +209,7 @@ void init() {
 
   int current_cor = _in(CORE_ID);
 
-  _mask(1);  
+  _mask(1);
   yield();
   printf(BOLDGREEN"core %d has finished to execute its first contexts. It is now waiting to steal some\n"RESET, current_cor);
   /* if(current_cor == 0) */
@@ -230,8 +231,8 @@ init_hard() {
 
 
   int i;
-  irq_disable();
-  test = 0;
+
+
   /* init hardware */
   if(init_hardware("core.ini") == 0) {
     fprintf(stderr, "Error in hardware initialization\n");
@@ -245,33 +246,34 @@ init_hard() {
     mega_ctx[i].ctx_disque = NULL;
     mega_ctx[i].nb_ctx= 0;
   }
-  test = 1;
+
   /* Interreupt handlers */
   for(i=1; i<16; i++)
     IRQVECTOR[i] = empty_it;
-  test = 2;
+
   /* c'est la fonction appellé quand on lance le coeur */
   IRQVECTOR[0] = init;
-  test = 3;
+  IRQVECTOR[TIMER_IRQ] = yield;
+
   /* on initialise le rand robin */
   randRob = 0;
-  create_ctx(16380, (func_t *)loop, (void*) NULL, "loop");
-  test = 4;
+
 
   /* on dit que l'on veut mettre en route 3 coeur */
   for(i = 0; i < CORE_NCORE; i++) {
     printf("le coeur %d a %d contextes\n", i, mega_ctx[i].nb_ctx);
   }
+
   _out(CORE_STATUS, 0x7);
-  test = 6;
+
   /* the fonction that is called at each interuption from the clock */
-  IRQVECTOR[TIMER_IRQ] = yield;
-  test = 7;
+
+
   /* we set-up the clock */
   _out(TIMER_PARAM, 128+64+32+8);
   _out(TIMER_ALARM, TIMER);
   irq_enable();
-  test = 8;
+
 
   init();
 
@@ -290,6 +292,7 @@ main(int argc, char **argv)
 
 
   init_hard();
+  create_ctx(16380, (func_t *)loop, (void*) NULL, "loop");
 
   /* abnormal end of dialog (cause EOF for xample) */
   do_xit();

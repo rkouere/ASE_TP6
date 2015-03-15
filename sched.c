@@ -190,10 +190,11 @@ void yield(){
 
   int currentCor = _in(CORE_ID);
   irq_disable();
-  printf(BOLDMAGENTA"\nje me lance quand test vaut : %d\n"RESET,test);
+
+  _out(TIMER_ALARM,TIMER);  /* alarm at next tick (at 0xFFFFFFFF) */
   klock();
   /* we reinitialise the timer's interuption */
-  _out(TIMER_ALARM,TIMER);  /* alarm at next tick (at 0xFFFFFFFF) */
+
   if(DEBUG){
     printf("\n !!!!!!!! CPT : %d!!!!!!!\n",cpt++);
     printf(GREEN"\n======================\n"RESET);

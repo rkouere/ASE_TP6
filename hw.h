@@ -17,7 +17,7 @@
 #define HDA_IRQ 14
 
 
-#define DEBUG 1
+#define DEBUG 0
 #define FNNAME __func__
 
 
@@ -32,7 +32,7 @@
 #define CORE_IRQMAPPER 0x82
 #define CORE_LOCK 0x98
 #define CORE_UNLOCK 0x99
-#define CORE_NCORE 8
+#define CORE_NCORE 3
 
 
 unsigned int enable_irq;
