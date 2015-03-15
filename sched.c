@@ -1,26 +1,47 @@
 #include "sched.h"
 
 
+/* rendu
+Pour chaque points dans chaque scéances :
+- ce que l'on a fait
+- ce qui marche
+- ce qui ne marche pas
+- explicaiton de ce que notre exemple fait
+
+ */
+
+
+
+
+
 /* manages locks */
 /* basically, each time we use mega_ctx, we make sure that no other core can change it */
 void klock() {
-  int i = 0;
-  /* we check that the lock is free */
-  if(_in(CORE_LOCK) == 1) {
-    /* we take the lock */
-    _out(CORE_LOCK, 0x2);
-  }
-  /* if it not free, we wait a bit and retry */
-  else {
-    while(i < 0xFFFF) {
-      i++;
-    }
-    klock();
-  }
+  /* int i = 0; */
+  /* /\* we check that the lock is free *\/ */
 
+  /* if(_in(CORE_LOCK) == 1) { */
+  /*   /\* we take the lock *\/ */
+  /*   printf("CONTNIUE 1\n"); */
+  /*   _out(CORE_LOCK, 0x2); */
+  /*   printf("CONTNIUE2\n"); */
+
+  /* } */
+  /* /\* if it not free, we wait a bit and retry *\/ */
+  /* else { */
+  /*   while(i < 0xFFFF) { */
+  /*     i++; */
+  /*   } */
+  /*   klock(); */
+  /* } */
+  while(_in(CORE_LOCK) != 1);
+  _out(CORE_LOCK, 0x2);
+  /* printf("klock \n"); */
+  
 }
 
 void kunlock() {
+  /* printf("kunlock\n"); */
   _out(CORE_UNLOCK, 0x1);
 }
 
@@ -61,13 +82,13 @@ void listJob(){
   /* Boucle parcourant les processeurs */
   for(i=0;i<CORE_NCORE;i++){
     mctx = &mega_ctx[i];
-    printf(BOLDGREEN"\nProcésseur n°%d,%d contexts: \n"RESET,i,mctx->nb_ctx);
-    if(!mctx->ring_head){/*Si aucune tache sur ce processeurs on affiche ce message et passe au processeur suivant*/
+    printf(BOLDGREEN"\nProcesseur n°%d,%d contexts: \n"RESET,i,mctx->nb_ctx);
+    if(!mctx->nb_ctx){/*Si aucune tache sur ce processeurs on affiche ce message et passe au processeur suivant*/
       printf(BOLDWHITE"\tAucun context sur ce processeur\n"RESET);
       continue;
     }
     ctx = mctx->ring_head;
-    /*Boucle parcourant les contexts de la ring_head*/
+    /* Boucle parcourant les contexts de la ring_head */
     for(j=0;j<mctx->nb_ctx;j++){
       printf("\t%s\n",ctx->ctx_name);
       ctx= ctx->ctx_next;
@@ -76,17 +97,13 @@ void listJob(){
 }
 
 int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * args,char *name){
-  irq_disable();
-  klock();
   ctx->ctx_stack = (char*) calloc(stack_size,sizeof(char));
   if ( ctx->ctx_stack == NULL) {
-    irq_enable();
-    kunlock();
     return 1;
   }
-  int corToInit = randRob;
+  int corToInit = randRob%CORE_NCORE;
 
-  printf(BOLDGREEN"[init_ctx] corToInit = %d\n"RESET, corToInit);
+  printf(BOLDGREEN"[init_ctx] corToInit = %d, %s\n"RESET, corToInit, name);
 
   ctx->ctx_name = name;
   ctx->ctx_state = CTX_RDY;
@@ -100,13 +117,11 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
   /* fin de ma question */
   ctx->ctx_magic = CTX_MAGIC;
   ctx->ctx_next = ctx;
-  mega_ctx[randRob%CORE_NCORE].nb_ctx++;
+  mega_ctx[corToInit].nb_ctx++;
 
   if(DEBUG)
     printf(BOLDBLUE"\n%d ) creating ctx %s on \n"RESET,mega_ctx[corToInit].nb_ctx,name);
 
-  irq_enable();
-  kunlock();
   return 0;
 }
 
@@ -115,19 +130,15 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   irq_disable();
   klock();
   struct ctx_s* new_ctx = (struct ctx_s*) calloc(1,sizeof(struct ctx_s));
-  int corToInit = randRob++%CORE_NCORE;
+  int corToInit = ++randRob%CORE_NCORE;
   /* int corToInit = randRob; */
 
   assert(new_ctx);
 
-  irq_enable();
-  kunlock();
   if(init_ctx(new_ctx, size, f, args ,name)){ 
     /* error */ 
     return 1; 
   }
-  irq_disable();
-  klock();
   /* if this is the first ctx that is initialised, we initialise the ring_head */
   if(!mega_ctx[corToInit].ring_head){
     mega_ctx[corToInit].ring_head = new_ctx;
@@ -152,6 +163,7 @@ void start(){
 
 void switch_to_ctx(struct ctx_s *new_ctx){
   int currentCor = _in(CORE_ID);
+
   assert(new_ctx != NULL);
   assert(new_ctx->ctx_magic == CTX_MAGIC);
 
@@ -175,10 +187,14 @@ void switch_to_ctx(struct ctx_s *new_ctx){
   if(mega_ctx[currentCor].current_ctx->ctx_state == CTX_RDY){
     mega_ctx[currentCor].current_ctx->ctx_state = CTX_EXQ;
     irq_enable();
+    kunlock();
     (*mega_ctx[currentCor].current_ctx->ctx_f)(mega_ctx[currentCor].current_ctx->ctx_arg);
     irq_disable();
+    klock();
     mega_ctx[currentCor].current_ctx->ctx_state = CTX_END;
-    yield();
+    irq_enable();
+    kunlock();
+    /* yield(); */
   }
   kunlock();
   irq_enable();
@@ -190,8 +206,11 @@ void yield(){
 
   int currentCor = _in(CORE_ID);
   irq_disable();
+<<<<<<< HEAD
 
   _out(TIMER_ALARM,TIMER);  /* alarm at next tick (at 0xFFFFFFFF) */
+=======
+>>>>>>> 69860409d1050032fc9e0ed772559c43e4901470
   klock();
   /* we reinitialise the timer's interuption */
 
@@ -206,7 +225,13 @@ void yield(){
       print_ctx(mega_ctx[currentCor].ring_head);
     printf(GREEN"\n======================\n"RESET);
     print_pile_ctx();
+  }
 
+  /* we check that we initialised a context before */
+  if(mega_ctx[currentCor].ring_head == NULL) {
+    irq_enable();
+    kunlock();
+    return;
   }
 
   /* if the current context of the thread has no jobs to do */
@@ -231,12 +256,20 @@ void yield(){
         ctx = ctx->ctx_next;
         continue;
       }
+      /* if there are no more contexts to deal with */
+      if(mega_ctx[currentCor].nb_ctx == 0){
+	irq_enable();
+	kunlock();
+      	return;
+      }
       /* if the context we are looking at was finished, we have to kill it */
       if(ctx->ctx_state == CTX_END){
-        /* ctx = ctx->ctx_next;	 */
+        ctx = ctx->ctx_next;
 	mega_ctx[currentCor].current_ctx->ctx_next = ctx->ctx_next;
 	free(ctx->ctx_stack);
 	free(ctx);
+	/* si il n'y a plus de contexte */
+	
 	/* si on est en tete de liste */
 	if(mega_ctx[currentCor].ring_head == ctx) 
 	  mega_ctx[currentCor].ring_head = mega_ctx[currentCor].current_ctx;
@@ -245,10 +278,8 @@ void yield(){
 	break;
       }
     }
-    irq_enable();
-    kunlock();
-
     switch_to_ctx(ctx);
+    
   }
 }
 
