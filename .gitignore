@@ -9,3 +9,5 @@ Makefile
 # built binaries
 shell_mc
 multiCore
+vdiskA.bin
+vdiskB.bin

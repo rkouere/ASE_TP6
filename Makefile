@@ -4,11 +4,11 @@
 #multicoeur
 
 #ROOTDIR=/home/m1/echallier/fac/m2/ASE++/ASE_TP6/lib_hd
-ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
+# ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
 
 #mahieddine
 #ROOTDIR=/home/mahieddine/Documents/cours/M1S2/ASEa/libhardware
-#ROOTDIR=/home/mahieddine/Documents/cours/M1S2/ASEa/TP2/lib_hd
+ROOTDIR=/home/mahieddine/Documents/cours/M1S2/ASEa/TP2/lib_hd
 
 
 

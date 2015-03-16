@@ -21,18 +21,18 @@
 #define FNNAME __func__
 
 
-#define TIMER_CLOCK 0xF0
-#define TIMER_PARAM 0xF4
-#define TIMER_ALARM 0xF8
-#define TIMER 0xFFFFFFFF + 100
+#define TIMER_CLOCK 240
+#define TIMER_PARAM 244
+#define TIMER_ALARM 248
+#define TIMER 0xFFFFFFFE
 #define TIMER_IRQ 2
 #define TIMER_TICKS 8
 
-#define CORE_STATUS 0x80
-#define CORE_ID 0x126
-#define CORE_IRQMAPPER 0x82
-#define CORE_LOCK 0x98
-#define CORE_UNLOCK 0x99
+#define CORE_STATUS 128
+#define CORE_ID 294
+#define CORE_IRQMAPPER 130
+#define CORE_LOCK 152
+#define CORE_UNLOCK 153
 #define CORE_NCORE 3
 
 
