@@ -101,6 +101,7 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
   if ( ctx->ctx_stack == NULL) {
     return 1;
   }
+
   int corToInit = randRob%CORE_NCORE;
 
   printf(BOLDGREEN"[init_ctx] corToInit = %d, %s\n"RESET, corToInit, name);
@@ -130,6 +131,11 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   irq_disable();
   klock();
   struct ctx_s* new_ctx = (struct ctx_s*) calloc(1,sizeof(struct ctx_s));
+
+  /* on fait en sorte de ne pas utiliser le core 1 */
+  if(randRob == 2)
+    randRob++;
+    
   int corToInit = ++randRob%CORE_NCORE;
   /* int corToInit = randRob; */
 
@@ -210,7 +216,7 @@ void yield(){
   _out(TIMER_ALARM,TIMER);  /* alarm at next tick (at 0xFFFFFFFF) */
   klock();
   /* we reinitialise the timer's interuption */
-
+  
   if(DEBUG){
     printf("\n !!!!!!!! CPT : %d!!!!!!!\n",cpt++);
     printf(GREEN"\n======================\n"RESET);
@@ -223,7 +229,7 @@ void yield(){
     printf(GREEN"\n======================\n"RESET);
     print_pile_ctx();
   }
-
+  printf(RED"YIELD CORE %d\n"RESET, _in(CORE_ID));
   /* we check that we initialised a context before */
   if(mega_ctx[currentCor].ring_head == NULL) {
     irq_enable();
