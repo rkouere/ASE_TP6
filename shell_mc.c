@@ -15,6 +15,7 @@
 #include <string.h>
 #include "sched.h"
 #include "hardware.h"
+#include <unistd.h>
 #include "hw.h"
 
 /* ------------------------------
@@ -260,15 +261,17 @@ empty_it()
 */
 void init() {
   int current_cor = _in(CORE_ID);
-
   _mask(1);
+  if(current_cor == 1)
+    create_ctx(16380, (func_t *)loop, (void*) NULL, "loop");
+
   yield();
   printf(BOLDGREEN"core %d has finished to execute its first contexts. It is now waiting to steal some\n"RESET, current_cor);
   /* if(current_cor == 0) */
   /*   testLoadBalancer(); */
   if(current_cor == 0) {
     printf("core n\n");
-    while(1);
+    while(1){sleep(10000000);};
   }  else
     loadBalancer(current_cor);
   /* while(1); */
@@ -312,7 +315,6 @@ main() {
   _out(TIMER_PARAM, 128+64+32+8);
   _out(TIMER_ALARM, 0xFFFFFFFF - 20);
 
-  /* create_ctx(16380, (func_t *)loop, (void*) NULL, "loop"); */
   /* on doit lancer cette fonction car sinon on sortirait driectement du prog */
   init();
   

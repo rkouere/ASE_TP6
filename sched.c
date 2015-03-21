@@ -133,9 +133,9 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   struct ctx_s* new_ctx = (struct ctx_s*) calloc(1,sizeof(struct ctx_s));
 
   /* on fait en sorte de ne pas utiliser le core 1 */
-  if(randRob == 2)
+  if(randRob%CORE_NCORE == 2)
     randRob++;
-    
+  printf("Rand bob = %d\n", randRob);
   int corToInit = ++randRob%CORE_NCORE;
   /* int corToInit = randRob; */
 
@@ -229,7 +229,7 @@ void yield(){
     printf(GREEN"\n======================\n"RESET);
     print_pile_ctx();
   }
-  printf(RED"YIELD CORE %d\n"RESET, _in(CORE_ID));
+  /* printf(RED"YIELD CORE %d\n"RESET, _in(CORE_ID)); */
   /* we check that we initialised a context before */
   if(mega_ctx[currentCor].ring_head == NULL) {
     irq_enable();
