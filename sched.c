@@ -223,11 +223,9 @@ void yield(){
   /* printf(RED"YIELD CORE %d\n"RESET, _in(CORE_ID)); */
   /* we check that we initialised a context before */
   if(mega_ctx[currentCor].ring_head == NULL) {
-<<<<<<< HEAD
+
     /* printf(BOLDBLUE "[yield] if NULL\n"RESET); */
 
-=======
->>>>>>> f9f58b8cafbaa4bffddedd8dcd3e79f7234b3d43
     irq_enable();
     kunlock();
     return;

@@ -3,11 +3,11 @@
 
 #multicoeur
 #MAC
-<<<<<<< HEAD
+
 # ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
-=======
+
 #ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
->>>>>>> f9f58b8cafbaa4bffddedd8dcd3e79f7234b3d43
+
 #ROOTDIR=/home/m1/echallier/fac/m2/ASE++/ASE_TP6/lib_hd
 
 #HP
