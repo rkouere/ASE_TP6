@@ -40,6 +40,58 @@ Semaphore : appel depuis un context et possiblement bloquant (=on passe la main 
 
 
 int nbCor = 3;
+#define MAX_CMD_SIZE 64
+static void quit(unsigned int nb, char cmd[MAX_CMD_SIZE][MAX_CMD_SIZE]);
+static void f_ping();
+
+
+/* we split the command entered by the user so that we have something looking like argc/argv */
+/* we doà not use global variables to make sure that everything we writte uses resources that will not cause mayhem while working on concurency */
+/* unsigned int splitter(const char * entry, char split[MAX_CMD_SIZE][MAX_CMD_SIZE]) { */
+/*   unsigned int nb = 0, tmp = 0;; */
+/*   while(*entry != '\0') { */
+/*     if(*entry == ' ') { */
+/*       split[nb++][tmp] = '\0'; */
+/*       tmp = 0; */
+/*     } */
+/*     else if(*entry == EOF || *entry == '\n') { */
+/*       split[nb][tmp] = '\0'; */
+/*       tmp = 0; */
+/*     } */
+/*     else { */
+/*       split[nb][tmp++] = *entry; */
+/*     } */
+/*     entry++; */
+/*   } */
+/*   return nb; */
+/* } */
+
+
+
+
+struct _cmd {
+  char *name;
+  void (*fun) (unsigned int nb, char cmd[MAX_CMD_SIZE][MAX_CMD_SIZE]);
+  char *comment;
+};
+static struct _cmd commands [] = {
+  /* {"exit", xit,	"exit (without saving)"}, */
+  {"ping", f_ping,	"exit (without saving)"},
+  {"quit", quit,	"save the MBR and quit"},
+  /* {"ps", ps,	"get the list of activities on processors"}, */
+  /* {"help", help,	"display this help"}, */
+  /* {0, none, 		"unknown command, try help"} */
+} ;
+
+
+static void
+quit(unsigned int nb, char split[MAX_CMD_SIZE][MAX_CMD_SIZE])
+{
+
+  printf(GREEN "mbr saved (if needed :). Exiting program.\n" RESET);
+
+  exit(EXIT_SUCCESS);
+}
 
 
 void f_ping(void *args)
@@ -86,14 +138,23 @@ void f_prong(void *args)
 
 
 }
-void printYo() {
+void printYo(void *args) {
   int i = 0;
   int cor = _in(CORE_ID);
   while(1) {
-    for(i = 0; i < 10000; i++) {
-      printf("yoyoyoyoyoyoyoyoy\n");
-      printf("printyo on cor %d\n", cor);
+    for(i = 0; i < 1000000000; i++) {
     }
+    printf("yoyoyoyoyoyoyoyoy\n");
+    printf("printyo on cor %d\n", cor);
+  }
+}
+void printYo2(void *args) {
+  int i = 0;
+  int cor = _in(CORE_ID);
+  while(1) {
+    for(i = 0; i < 1000000000; i++) {
+    }
+    printf("printyo2 on cor %d\n", cor);
   }
 }
 
@@ -114,15 +175,15 @@ void irqCoucou() {
 
 void testLoadBalancer() {
 
-  randRob = 0;
+  /* randRob = 0; */
   create_ctx(16380, &printYo, (void*) NULL, "printYo1");
-  randRob = 0;
+  /* randRob = 0; */
   create_ctx(16380, &printYo, (void*) NULL, "printYo2");
-  randRob = 0;
-  create_ctx(16380, &printYo, (void*) NULL, "printYo3");
-  randRob = 0;
-  create_ctx(16380, &printYo, (void*) NULL, "printYo4");
-  randRob = 0;
+  /* randRob = 0; */
+  create_ctx(16380, &printYo2, (void*) NULL, "printYo3");
+  /* randRob = 0; */
+  create_ctx(16380, &printYo2, (void*) NULL, "printYo4");
+  /* randRob = 0; */
   create_ctx(16380, &printYo, (void*) NULL, "printYo5");
 
   
@@ -179,31 +240,43 @@ void init() {
   int current_cor = _in(CORE_ID);
 
   _mask(1);
-  yield();
+  /* yield(); */
   printf(BOLDGREEN"core %d has finished to execute its first contexts. It is now waiting to steal some\n"RESET, current_cor);
   /* if(current_cor == 0) */
   /*   testLoadBalancer(); */
-
+  testLoadBalancer();
   loadBalancer(current_cor);
 
 }
 
-void
+
+static void
+execute(const char *name)
+{
+  struct _cmd *c = commands; 
+  char split[MAX_CMD_SIZE][MAX_CMD_SIZE];    
+  unsigned int nb = 0;
+  nb = splitter(name, split);
+  while (c->name && strcmp (split[0], c->name))
+    c++;
+  (*c->fun)(nb, split);
+}
+
+static void
 loop()
 {
-  while (1) {
-    printf("> \n");
-  }
+  char name[MAX_CMD_SIZE];
+  
+  while (printf("shell_mc :|->  "), fgets (name, MAX_CMD_SIZE, stdin) != NULL) 
+    execute(name) ;
 
 }
 
 
+
 int
 main() {
-
   int i;
-  irq_disable();
-
   /* init hardware */
   if(init_hardware("core.ini") == 0) {
     fprintf(stderr, "Error in hardware initialization\n");
@@ -218,6 +291,8 @@ main() {
     mega_ctx[i].ctx_disque = NULL;
     mega_ctx[i].nb_ctx= 0;
   }
+  randRob = 0;
+  /* create_ctx(16380, &loop, (void*) NULL, "loop"); */
 
   /* Interreupt handlers */
   for(i=1; i<16; i++)
@@ -226,27 +301,23 @@ main() {
   /* c'est la fonction appellé quand on lance le coeur */
   IRQVECTOR[0] = init;
 
-  /* on initialise le rand robin */
-  randRob = 0;
-  create_ctx(16380, &loop, (void*) NULL, "loop");
-  /* on dit que l'on veut mettre en route 3 coeur */
-  for(i = 0; i < CORE_NCORE; i++) {
-    printf("le coeur %d a %d contextes\n", i, mega_ctx[i].nb_ctx);
-  }
+  /* on dit que l'on veut mettre en route 6 coeur */
   _out(CORE_STATUS, 0x7);
-
-  /* the fonction that is called at each interuption from the clock */
+  
+  /* on gere l'interuption */
+  /* on fait en sorte que toute les interuption de type TIMER_IRQ sont redirige vers le coeur 2 */
   IRQVECTOR[TIMER_IRQ] = yield;
+  for(i = 1; i < CORE_NCORE; i++)
+    _out(CORE_IRQMAPPER + i, 0);
 
-  /* we set-up the clock */
+  for(i = 1; i < CORE_NCORE; i++)
+    _out(CORE_IRQMAPPER + i, 1 << TIMER_IRQ);
+
   _out(TIMER_PARAM, 128+64+32+8);
-  _out(TIMER_ALARM, TIMER);
-  irq_enable();
+  _out(TIMER_ALARM, 0xFFFFFFFF - 20);
 
-
+  /* on doit lancer cette fonction car sinon on sortirait driectement du prog */
   init();
-  /* testLoadBalancer(); */
-  /* yield(); */
 
   return 0;
 }

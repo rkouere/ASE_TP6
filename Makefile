@@ -2,11 +2,12 @@
 ##############################################################################
 
 #multicoeur
-
+#MAC
+ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
 #ROOTDIR=/home/m1/echallier/fac/m2/ASE++/ASE_TP6/lib_hd
 
 #HP
-ROOTDIR=/home/rkouere/fac/M1/S2/ASE++/ASE_TP6/lib_hd
+#ROOTDIR=/home/rkouere/fac/M1/S2/ASE++/ASE_TP6/lib_hd
 # ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
 
 #mahieddine
@@ -35,6 +36,13 @@ LIBS    = -lhardware
 BINARIES= shell_mc
 OBJECTS	= $(addsuffix .o,\
 	hw sched shell_mc)
+
+#multiCore
+# BINARIES= multiCore
+# OBJECTS	= $(addsuffix .o,\
+# 	hw sched)
+
+
 # hw sched drive mbr vol super tools mount inode ifile file dir)
 
 
@@ -87,7 +95,6 @@ shell_mc:shell_mc.o  $(OBJECTS)
 # if_nfile.o: if_nfile.c ifile.h inode.h tools.h mount.h
 # if_pfile.o: if_pfile.c ifile.h inode.h tools.h mount.h
 
-multiCore.o: multiCore.c hw.h sched.h
 current.o: current.c current.h
 dfs.o: dfs.c super.h mbr.h drive.h hw.h colors.h vol.h mount.h sched.h
 dir.o: dir.c super.h mbr.h drive.h hw.h colors.h vol.h inode.h tools.h mount.h ifile.h dir.h sched.h
@@ -118,7 +125,8 @@ vm.o: vm.c drive.h hw.h mbr.h colors.h mount.h sched.h
 vol.o: vol.c vol.h drive.h hw.h mbr.h colors.h sched.h
 sched.o: sched.c sched.h hw.h
 hw.o:hw.c hw.h
-shell_mc.o: shell_mc.c hw.h sched.h
+hell_mc.o: shell_mc.c hw.h sched.h
+multiCore.o: multiCore.c hw.h sched.h
 
 
 %.o: %.c

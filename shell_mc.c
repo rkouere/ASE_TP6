@@ -166,7 +166,6 @@ void f_ping(void *args)
 static
 void ping(){
   create_ctx(16380, &f_ping, (void*) NULL, "ping");
-  create_ctx(16380, &f_ping, (void*) NULL, "ping2");
 }
 
 
@@ -175,7 +174,12 @@ void loadBalancer(int current_cor) {
   int i;
   if(!DEBUG)
     printf("load balancer started for cor %d\n", current_cor);
-  while(1) {}
+  while(1) {
+    /* i = 0; */
+    /* while(i < 10000000) */
+    /*   i++; */
+    /* printf("[load balancer] balancing on cor %d\n", _in(CORE_ID)); */
+  }
   /* we have finished the contexts we initialised, now, we need to steal some context from the other cores */
 
   /* while(1) { */
@@ -265,15 +269,17 @@ void init() {
   if(current_cor == 1)
     create_ctx(16380, (func_t *)loop, (void*) NULL, "loop");
 
-  yield();
+  /* yield(); */
   printf(BOLDGREEN"core %d has finished to execute its first contexts. It is now waiting to steal some\n"RESET, current_cor);
   /* if(current_cor == 0) */
   /*   testLoadBalancer(); */
   if(current_cor == 0) {
     printf("core n\n");
     while(1){sleep(10000000);};
-  }  else
+  }  else {
+    printf("[init] load bal started on cor %d\n", current_cor);
     loadBalancer(current_cor);
+  }
   /* while(1); */
 
 
@@ -306,11 +312,12 @@ main() {
   /* on gere l'interuption */
   /* on fait en sorte que toute les interuption de type TIMER_IRQ sont redirige vers le coeur 2 */
   IRQVECTOR[TIMER_IRQ] = yield;
-  for(i = 0; i < 6; i++)
+  for(i = 0; i < CORE_NCORE; i++)
     _out(CORE_IRQMAPPER + i, 0);
 
   
-  _out(CORE_IRQMAPPER + 2, 1 << TIMER_IRQ);
+  for(i = 1; i < CORE_NCORE; i++)
+    _out(CORE_IRQMAPPER + i, 1 << TIMER_IRQ);
 
   _out(TIMER_PARAM, 128+64+32+8);
   _out(TIMER_ALARM, 0xFFFFFFFF - 20);

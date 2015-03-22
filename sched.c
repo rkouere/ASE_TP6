@@ -17,25 +17,23 @@ Pour chaque points dans chaque scéances :
 /* manages locks */
 /* basically, each time we use mega_ctx, we make sure that no other core can change it */
 void klock() {
-  /* int i = 0; */
+  int i = 0;
   /* /\* we check that the lock is free *\/ */
 
-  /* if(_in(CORE_LOCK) == 1) { */
-  /*   /\* we take the lock *\/ */
-  /*   printf("CONTNIUE 1\n"); */
-  /*   _out(CORE_LOCK, 0x2); */
-  /*   printf("CONTNIUE2\n"); */
+  if(_in(CORE_LOCK) == 1) {
+    /* we take the lock */
+    _out(CORE_LOCK, 0x2);
 
-  /* } */
-  /* /\* if it not free, we wait a bit and retry *\/ */
-  /* else { */
-  /*   while(i < 0xFFFF) { */
-  /*     i++; */
-  /*   } */
-  /*   klock(); */
-  /* } */
-  while(_in(CORE_LOCK) != 1);
-  _out(CORE_LOCK, 0x2);
+  }
+  /* if it not free, we wait a bit and retry */
+  else {
+    while(i < 0xFFFF) {
+      i++;
+    }
+    klock();
+  }
+  /* while(_in(CORE_LOCK) != 1); */
+  /* _out(CORE_LOCK, 0x2); */
   /* printf("klock \n"); */
   
 }
@@ -131,10 +129,11 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   irq_disable();
   klock();
   struct ctx_s* new_ctx = (struct ctx_s*) calloc(1,sizeof(struct ctx_s));
-
   /* on fait en sorte de ne pas utiliser le core 1 */
-  if(randRob%CORE_NCORE == 2)
+  if(randRob%CORE_NCORE == CORE_NCORE - 1 || randRob%CORE_NCORE == 0) {
+    printf("[create_ctx] core 0\n");
     randRob++;
+  }
   printf("Rand bob = %d\n", randRob);
   int corToInit = ++randRob%CORE_NCORE;
   /* int corToInit = randRob; */
@@ -156,6 +155,7 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   }
   kunlock();
   irq_enable();
+
   return 0;
 }
 
@@ -202,6 +202,7 @@ void switch_to_ctx(struct ctx_s *new_ctx){
     kunlock();
     /* yield(); */
   }
+
   kunlock();
   irq_enable();
 }
@@ -213,6 +214,9 @@ void yield(){
   int currentCor = _in(CORE_ID);
   irq_disable();
 
+  if(currentCor == 0)
+    return;
+  
   _out(TIMER_ALARM,TIMER);  /* alarm at next tick (at 0xFFFFFFFF) */
   klock();
   /* we reinitialise the timer's interuption */
@@ -232,6 +236,8 @@ void yield(){
   /* printf(RED"YIELD CORE %d\n"RESET, _in(CORE_ID)); */
   /* we check that we initialised a context before */
   if(mega_ctx[currentCor].ring_head == NULL) {
+    printf(BOLDBLUE "[yield] if NULL\n"RESET);
+
     irq_enable();
     kunlock();
     return;
@@ -261,6 +267,7 @@ void yield(){
       }
       /* if there are no more contexts to deal with */
       if(mega_ctx[currentCor].nb_ctx == 0){
+	/* mega_ctx[currentCor].ring_head = NULL; */
 	irq_enable();
 	kunlock();
       	return;
