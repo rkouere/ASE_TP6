@@ -236,7 +236,7 @@ void yield(){
   /* printf(RED"YIELD CORE %d\n"RESET, _in(CORE_ID)); */
   /* we check that we initialised a context before */
   if(mega_ctx[currentCor].ring_head == NULL) {
-    printf(BOLDBLUE "[yield] if NULL\n"RESET);
+    /* printf(BOLDBLUE "[yield] if NULL\n"RESET); */
 
     irq_enable();
     kunlock();
@@ -279,9 +279,9 @@ void yield(){
 	free(ctx->ctx_stack);
 	free(ctx);
 	/* si il n'y a plus de contexte */
-	
+
 	/* si on est en tete de liste */
-	if(mega_ctx[currentCor].ring_head == ctx) 
+	if(mega_ctx[currentCor].ring_head == ctx)
 	  mega_ctx[currentCor].ring_head = mega_ctx[currentCor].current_ctx;
 	ctx = mega_ctx[currentCor].current_ctx->ctx_next;
 	mega_ctx[currentCor].nb_ctx--;
@@ -289,7 +289,7 @@ void yield(){
       }
     }
     switch_to_ctx(ctx);
-    
+
   }
 }
 
@@ -328,3 +328,50 @@ void wait_disque(){
 }
 
 
+
+void sem_init(struct sem_s *sem, unsigned int val, char* name){
+  irq_disable();
+  klock();
+  if(!sem)
+    sem = malloc(sizeof(struct sem_s));
+
+  sem->sem_name=name;
+  sem->sem_cpt=sem->init_cpt=val;
+  sem->sem_head = (struct ctx_s *)0;
+  sem->sem_last= (struct ctx_s *)0;
+  kunlock();
+  irq_enable();
+}
+void sem_up(struct sem_s *sem){
+  irq_disable();
+  klock();
+  assert(sem->sem_cpt < sem->init_cpt);
+  sem->sem_cpt++;
+  if(sem->sem_head){
+    struct ctx_s *tmp;
+    sem->sem_head->ctx_state = CTX_EXQ;
+    tmp = sem->sem_head->ctx_sem_next;
+    sem->sem_head = tmp;
+  }
+  kunlock();
+  irq_enable();
+}
+void sem_down(struct sem_s *sem){
+  irq_disable();
+  klock();
+  int currentCor = _in(CORE_ID);
+  if(!sem->sem_cpt){
+    if(!sem->sem_head && !sem->sem_last){
+      sem->sem_last=sem->sem_head = mega_ctx[currentCor].current_ctx;
+      sem->sem_head->ctx_state = CTX_STP;
+      yield();
+    }
+    sem->sem_last->ctx_sem_next = mega_ctx[currentCor].current_ctx;
+    sem->sem_last = mega_ctx[currentCor].current_ctx;
+    sem->sem_last->ctx_state = CTX_STP;
+    yield();
+  }
+  sem->sem_cpt--;
+  kunlock();
+  irq_enable();
+}
