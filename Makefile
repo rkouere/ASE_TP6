@@ -3,11 +3,15 @@
 
 #multicoeur
 #MAC
+<<<<<<< HEAD
 # ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
+=======
+#ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
+>>>>>>> f9f58b8cafbaa4bffddedd8dcd3e79f7234b3d43
 #ROOTDIR=/home/m1/echallier/fac/m2/ASE++/ASE_TP6/lib_hd
 
 #HP
-#ROOTDIR=/home/rkouere/fac/M1/S2/ASE++/ASE_TP6/lib_hd
+ROOTDIR=/home/rkouere/fac/M1/S2/ASE++/ASE_TP6/lib_hd
 # ROOTDIR=/home/rkouere/fac/S2/ASE++/ASE_TP6/lib_hd
 
 #mahieddine
@@ -90,10 +94,6 @@ shell_mc:shell_mc.o  $(OBJECTS)
 ### #include dependences 
 ###------------------------------------------------------------
 # you may fillese lines with "make depend"
-# if_cfile.o: if_cfile.c ifile.h inode.h tools.h mount.h
-# if_dfile.o: if_dfile.c ifile.h inode.h tools.h mount.h
-# if_nfile.o: if_nfile.c ifile.h inode.h tools.h mount.h
-# if_pfile.o: if_pfile.c ifile.h inode.h tools.h mount.h
 
 current.o: current.c current.h
 dfs.o: dfs.c super.h mbr.h drive.h hw.h colors.h vol.h mount.h sched.h
@@ -125,7 +125,7 @@ vm.o: vm.c drive.h hw.h mbr.h colors.h mount.h sched.h
 vol.o: vol.c vol.h drive.h hw.h mbr.h colors.h sched.h
 sched.o: sched.c sched.h hw.h
 hw.o:hw.c hw.h
-hell_mc.o: shell_mc.c hw.h sched.h
+shell_mc.o: shell_mc.c hw.h sched.h
 multiCore.o: multiCore.c hw.h sched.h
 
 

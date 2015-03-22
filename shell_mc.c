@@ -172,82 +172,45 @@ void ping(){
 void loadBalancer(int current_cor) {
   int cor_with_max_ctx; /* the cor with the maximum of ctx */
   int i;
-  if(!DEBUG)
-    printf("load balancer started for cor %d\n", current_cor);
-  while(1) {
-    /* i = 0; */
-    /* while(i < 10000000) */
-    /*   i++; */
-    /* printf("[load balancer] balancing on cor %d\n", _in(CORE_ID)); */
-  }
+  /* if(!DEBUG) */
+  /*   printf("load balancer started for cor %d\n", current_cor); */
   /* we have finished the contexts we initialised, now, we need to steal some context from the other cores */
 
-  /* while(1) { */
-  /*   /\* by default we take the first core as our starting point *\/ */
-  /*   cor_with_max_ctx = 0; */
-  /*   /\* TO DELETE : loop to wait and let me print things in a way that is manageable *\/ */
-  /*   for(i = 0; i < 1000000; i++) {} */
-  /*   /\* we are going to go through all the current cores and check wich one has the highest number of cor *\/ */
-  /*   /\* note: we start at one because we have already used core number one as our starting point *\/ */
-  /*   for(i = 0; i < CORE_NCORE; i++) { */
-  /*     if(mega_ctx[i].nb_ctx > mega_ctx[cor_with_max_ctx].nb_ctx) { */
-  /* 	cor_with_max_ctx = i; */
-  /*     } */
-  /*   } */
-  /*   /\* we need to make sure that everything we are doing is "safe" *\/ */
-  /*   irq_disable(); */
-  /*   klock(); */
-  /*   /\* we check that the lucky core has more that one task to do (there is no point to steal its only task, poor soul) *\/ */
-  /*   /\* if it has, we take the next context it was supposed to deal with *\/ */
-  /*   if(mega_ctx[cor_with_max_ctx].nb_ctx > 1) { */
-  /*     printf(BOLDCYAN"cor %d has taken a context from cor%d\n", current_cor, cor_with_max_ctx); */
-  /*     mega_ctx[current_cor].current_ctx = mega_ctx[cor_with_max_ctx].current_ctx->ctx_next; */
-  /*     mega_ctx[cor_with_max_ctx].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx->ctx_next; */
-  /*     mega_ctx[current_cor].current_ctx->ctx_next = mega_ctx[current_cor].current_ctx; */
-  /*     yield(); */
-  /*   } */
-  /*   irq_enable(); */
-  /*   kunlock(); */
-
-  /*   while(1) { */
-  /*     /\* by default we take the first core as our starting point *\/ */
-  /*     cor_with_max_ctx = 0; */
-  /*     /\* TO DELETE : loop to wait and let me print things in a way that is manageable *\/ */
-  /*     /\* we are going to go through all the current cores and check wich one has the highest number of cor *\/ */
-  /*     /\* note: we start at one because we have already used core number one as our starting point *\/ */
-  /*     for(i = 0; i < CORE_NCORE; i++) { */
-  /*       if(mega_ctx[i].nb_ctx > mega_ctx[cor_with_max_ctx].nb_ctx) { */
-  /*     	cor_with_max_ctx = i; */
-  /*       } */
-  /*     } */
-  /*     /\* we need to make sure that everything we are doing is "safe" *\/ */
-  /*     irq_disable(); */
-  /*     klock(); */
-  /*     /\* we check that the lucky core has more that one task to do (there is no point to steal its only task, poor soul) *\/ */
-  /*     /\* if it has, we take the next context it was supposed to deal with and we check that a core can't steal its own contexts *\/ */
-  /*     if(mega_ctx[cor_with_max_ctx].nb_ctx > 1 && cor_with_max_ctx != current_cor) { */
-  /*       /\* printf(BOLDCYAN"cor %d has taken a context from cor %d\n", current_cor, cor_with_max_ctx); *\/ */
-  /*       assert(mega_ctx[cor_with_max_ctx].ring_head->ctx_next); */
-  /*       if(mega_ctx[current_cor].ring_head != mega_ctx[current_cor].current_ctx) */
-  /*     	mega_ctx[current_cor].ring_head = mega_ctx[cor_with_max_ctx].ring_head; */
-  /*       else */
-  /*     	mega_ctx[current_cor].ring_head = mega_ctx[cor_with_max_ctx].ring_head->ctx_next; */
-  /*       mega_ctx[cor_with_max_ctx].ring_head = mega_ctx[current_cor].ring_head->ctx_next; */
-  /*       mega_ctx[current_cor].ring_head->ctx_next = mega_ctx[current_cor].ring_head; */
-  /*       mega_ctx[current_cor].nb_ctx++; */
-  /*       mega_ctx[cor_with_max_ctx].nb_ctx--; */
-  /*       irq_enable(); */
-  /*       kunlock(); */
-  /*       yield(); */
-  /*     } */
-  /*     irq_enable(); */
-  /*     kunlock(); */
-  /*     yield(); */
-  /*   } */
-  /* } */
-  /* while(1){ */
-  /*   yield(); */
-  /* } */
+    while(1) {
+      /* by default we take the first core as our starting point */
+      cor_with_max_ctx = 0;
+      /* TO DELETE : loop to wait and let me print things in a way that is manageable */
+      /* we are going to go through all the current cores and check wich one has the highest number of cor */
+      /* note: we start at one because we have already used core number one as our starting point */
+      for(i = 0; i < CORE_NCORE; i++) {
+        if(mega_ctx[i].nb_ctx > mega_ctx[cor_with_max_ctx].nb_ctx) {
+      	cor_with_max_ctx = i;
+        }
+      }
+      /* we need to make sure that everything we are doing is "safe" */
+      irq_disable();
+      klock();
+      /* we check that the lucky core has more that one task to do (there is no point to steal its only task, poor soul) */
+      /* if it has, we take the next context it was supposed to deal with and we check that a core can't steal its own contexts */
+      if(mega_ctx[cor_with_max_ctx].nb_ctx > 1 && cor_with_max_ctx != current_cor) {
+        /* printf(BOLDCYAN"cor %d has taken a context from cor %d\n", current_cor, cor_with_max_ctx); */
+        assert(mega_ctx[cor_with_max_ctx].ring_head->ctx_next);
+        if(mega_ctx[current_cor].ring_head != mega_ctx[current_cor].current_ctx)
+      	mega_ctx[current_cor].ring_head = mega_ctx[cor_with_max_ctx].ring_head;
+        else
+      	mega_ctx[current_cor].ring_head = mega_ctx[cor_with_max_ctx].ring_head->ctx_next;
+        mega_ctx[cor_with_max_ctx].ring_head = mega_ctx[current_cor].ring_head->ctx_next;
+        mega_ctx[current_cor].ring_head->ctx_next = mega_ctx[current_cor].ring_head;
+        mega_ctx[current_cor].nb_ctx++;
+        mega_ctx[cor_with_max_ctx].nb_ctx--;
+        irq_enable();
+        kunlock();
+        yield();
+      }
+      irq_enable();
+      kunlock();
+      yield();
+    }
 }
 
 
@@ -266,19 +229,19 @@ empty_it()
 void init() {
   int current_cor = _in(CORE_ID);
   _mask(1);
-  if(current_cor == 1)
-    create_ctx(16380, (func_t *)loop, (void*) NULL, "loop");
+  /* if(current_cor == 1) { */
+  /*   create_ctx(16380, (func_t *)loop, (void*) NULL, "loop"); */
+  /* } */
 
-  /* yield(); */
   printf(BOLDGREEN"core %d has finished to execute its first contexts. It is now waiting to steal some\n"RESET, current_cor);
-  /* if(current_cor == 0) */
-  /*   testLoadBalancer(); */
+
   if(current_cor == 0) {
-    printf("core n\n");
+    /* printf("core n\n"); */
     while(1){sleep(10000000);};
   }  else {
     printf("[init] load bal started on cor %d\n", current_cor);
-    loadBalancer(current_cor);
+    while(1){}
+    /* loadBalancer(current_cor); */
   }
   /* while(1); */
 
@@ -296,8 +259,17 @@ main() {
     fprintf(stderr, "Error in hardware initialization\n");
     exit(EXIT_FAILURE);
   }
+  /* we initialse each of ctx of each core */
+  for(i = 0; i < CORE_NCORE; i++) {
+    mega_ctx[i].current_ctx = NULL;
+    mega_ctx[i].ring_head = NULL;
+    mega_ctx[i].return_ctx = NULL;
+    mega_ctx[i].ctx_disque = NULL;
+    mega_ctx[i].nb_ctx= 0;
+  }
 
   randRob = 0;
+  create_ctx(16380, (func_t *)loop, (void*) NULL, "loop");
 
   /* Interreupt handlers */
   for(i=1; i<16; i++)
@@ -328,68 +300,3 @@ main() {
   return 0;
 }
 
-/* int */
-/* main(int argc, char **argv) */
-/* { */
-/*   int i; */
-
-
-/*   /\* init hardware *\/ */
-/*   if(init_hardware("core.ini") == 0) { */
-/*     fprintf(stderr, "Error in hardware initialization\n"); */
-/*     exit(EXIT_FAILURE); */
-/*   } */
-
-/*   /\* we initialse each of ctx of each core *\/ */
-/*   for(i = 0; i < CORE_NCORE; i++) { */
-/*     mega_ctx[i].current_ctx = NULL; */
-/*     mega_ctx[i].ring_head = NULL; */
-/*     mega_ctx[i].return_ctx = NULL; */
-/*     mega_ctx[i].ctx_disque = NULL; */
-/*     mega_ctx[i].nb_ctx= 0; */
-/*   } */
-
-/*   /\* Interreupt handlers *\/ */
-/*   for(i=1; i<16; i++) */
-/*     IRQVECTOR[i] = empty_it; */
-
-/*   /\* c'est la fonction appellé quand on lance le coeur *\/ */
-/*   create_ctx(16380, (func_t *)loop, (void*) NULL, "loop"); */
-/*   IRQVECTOR[0] = init; */
-/*   for(i = 0; i < 6; i++) */
-/*     _out(CORE_IRQMAPPER + i, 0); */
-
-/*   _out(CORE_IRQMAPPER + 2, 1 << TIMER_IRQ);                                                                                                                              */
-/*   IRQVECTOR[TIMER_IRQ] = yield; */
-
-/*   /\* on initialise le rand robin *\/ */
-/*   randRob = 0; */
-
-
-/*   /\* on dit que l'on veut mettre en route 3 coeur *\/ */
-/*   for(i = 0; i < CORE_NCORE; i++) { */
-/*     printf("le coeur %d a %d contextes\n", i, mega_ctx[i].nb_ctx); */
-/*   } */
-
-/*   _out(CORE_STATUS, 7); */
-
-/*   /\* the fonction that is called at each interuption from the clock *\/ */
-
-
-
-/*   /\* we set-up the clock *\/ */
-/*   _out(TIMER_PARAM, 128+64+32+8); */
-/*   _out(TIMER_ALARM, TIMER); */
-
-/*   irq_enable(); */
-/*   printf("INIT\n"); */
-/*   init(); */
-
-/*   irq_enable(); */
-
-/*   /\* abnormal end of dialog (cause EOF for xample) *\/ */
-/*   do_xit(); */
-
-/*   /\* make gcc -W happy *\/ */
-/*   exit(EXIT_SUCCESS); */
-/* } */

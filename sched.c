@@ -17,23 +17,8 @@ Pour chaque points dans chaque scéances :
 /* manages locks */
 /* basically, each time we use mega_ctx, we make sure that no other core can change it */
 void klock() {
-  int i = 0;
-  /* /\* we check that the lock is free *\/ */
-
-  if(_in(CORE_LOCK) == 1) {
-    /* we take the lock */
-    _out(CORE_LOCK, 0x2);
-
-  }
-  /* if it not free, we wait a bit and retry */
-  else {
-    while(i < 0xFFFF) {
-      i++;
-    }
-    klock();
-  }
-  /* while(_in(CORE_LOCK) != 1); */
-  /* _out(CORE_LOCK, 0x2); */
+  while(_in(CORE_LOCK) != 1);
+  _out(CORE_LOCK, 0x2);
   /* printf("klock \n"); */
   
 }
@@ -130,8 +115,7 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   klock();
   struct ctx_s* new_ctx = (struct ctx_s*) calloc(1,sizeof(struct ctx_s));
   /* on fait en sorte de ne pas utiliser le core 1 */
-  if(randRob%CORE_NCORE == CORE_NCORE - 1 || randRob%CORE_NCORE == 0) {
-    printf("[create_ctx] core 0\n");
+  if(randRob%CORE_NCORE == CORE_NCORE - 1) {
     randRob++;
   }
   printf("Rand bob = %d\n", randRob);
@@ -169,9 +153,9 @@ void start(){
 
 void switch_to_ctx(struct ctx_s *new_ctx){
   int currentCor = _in(CORE_ID);
-
   assert(new_ctx != NULL);
   assert(new_ctx->ctx_magic == CTX_MAGIC);
+
 
   /* if we have not set a context, we initialise the return adress where we are supposed to go */
   if(!mega_ctx[currentCor].ring_head & !mega_ctx[currentCor].current_ctx){
@@ -179,13 +163,15 @@ void switch_to_ctx(struct ctx_s *new_ctx){
     mega_ctx[currentCor].return_ctx->ctx_magic = CTX_MAGIC;
     __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].return_ctx->ctx_rsp));
     __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].return_ctx->ctx_rbp));
-  } else {
-    __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rsp));
-    __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rbp));
-  }
+  } 
+  /* else we save the context of the current context */
+  else {
+      __asm__ ("movl %%esp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rsp));
+      __asm__ ("movl %%ebp, %0\n" :"=r"(mega_ctx[currentCor].current_ctx->ctx_rbp));
+    }
 
   mega_ctx[currentCor].current_ctx = new_ctx;
-
+ 
   __asm__ ("movl %0, %%esp\n" ::"r"(mega_ctx[currentCor].current_ctx->ctx_rsp));
   __asm__ ("movl %0, %%ebp\n" ::"r"(mega_ctx[currentCor].current_ctx->ctx_rbp));
 
@@ -200,7 +186,7 @@ void switch_to_ctx(struct ctx_s *new_ctx){
     mega_ctx[currentCor].current_ctx->ctx_state = CTX_END;
     irq_enable();
     kunlock();
-    /* yield(); */
+    yield();
   }
 
   kunlock();
@@ -214,6 +200,7 @@ void yield(){
   int currentCor = _in(CORE_ID);
   irq_disable();
 
+  /* on fait en sorte de ne pas faire de yield sur le coeur 0 (il est en panne)*/
   if(currentCor == 0)
     return;
   
@@ -236,8 +223,11 @@ void yield(){
   /* printf(RED"YIELD CORE %d\n"RESET, _in(CORE_ID)); */
   /* we check that we initialised a context before */
   if(mega_ctx[currentCor].ring_head == NULL) {
+<<<<<<< HEAD
     /* printf(BOLDBLUE "[yield] if NULL\n"RESET); */
 
+=======
+>>>>>>> f9f58b8cafbaa4bffddedd8dcd3e79f7234b3d43
     irq_enable();
     kunlock();
     return;
@@ -252,22 +242,24 @@ void yield(){
 
     switch_to_ctx(mega_ctx[currentCor].current_ctx);
   } else {
+
     /* we set the new context we are going to look at */
     struct ctx_s * ctx = mega_ctx[currentCor].current_ctx->ctx_next;
 
     /* we are going to try to find a context we can deal with */
     while(1){
-      if(ctx->ctx_state == CTX_RDY)
+      if(ctx->ctx_state == CTX_RDY) 
         break;
-      if(ctx->ctx_state == CTX_EXQ)
+      if(ctx->ctx_state == CTX_EXQ) {
         break;
+      }
       if(ctx->ctx_state == CTX_DISQUE || ctx->ctx_state == CTX_STP){
         ctx = ctx->ctx_next;
         continue;
       }
       /* if there are no more contexts to deal with */
       if(mega_ctx[currentCor].nb_ctx == 0){
-	/* mega_ctx[currentCor].ring_head = NULL; */
+	mega_ctx[currentCor].ring_head = NULL;
 	irq_enable();
 	kunlock();
       	return;
