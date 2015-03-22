@@ -84,7 +84,6 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
   if ( ctx->ctx_stack == NULL) {
     return 1;
   }
-
   int corToInit = randRob%CORE_NCORE;
 
   printf(BOLDGREEN"[init_ctx] corToInit = %d, %s\n"RESET, corToInit, name);
@@ -94,11 +93,6 @@ int init_ctx(struct ctx_s *ctx, int stack_size, func_t f,struct parameters * arg
   ctx->ctx_size = stack_size;
   ctx->ctx_f = f;
   ctx->ctx_arg = args;
-
-  /* QUESTION : comment peut-on initialiser le rsp et le rbp ici car nous n'avons pas encore sauvegardé les contexte ? */
-  /* ctx->ctx_rsp = &(ctx->ctx_stack[stack_size-16]); */
-  /* ctx->ctx_rbp = ctx->ctx_rsp; */
-  /* fin de ma question */
   ctx->ctx_magic = CTX_MAGIC;
   ctx->ctx_next = ctx;
   mega_ctx[corToInit].nb_ctx++;
@@ -115,11 +109,11 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   klock();
   struct ctx_s* new_ctx = (struct ctx_s*) calloc(1,sizeof(struct ctx_s));
   /* on fait en sorte de ne pas utiliser le core 1 */
-  if(randRob%CORE_NCORE == CORE_NCORE - 1) {
-    randRob++;
+  if(randRob%CORE_NCORE == 0) {
+    randRob+=1;
   }
   printf("Rand bob = %d\n", randRob);
-  int corToInit = ++randRob%CORE_NCORE;
+  int corToInit = randRob%CORE_NCORE;
   /* int corToInit = randRob; */
 
   assert(new_ctx);
@@ -203,11 +197,11 @@ void yield(){
   /* on fait en sorte de ne pas faire de yield sur le coeur 0 (il est en panne)*/
   if(currentCor == 0)
     return;
-  
+
   _out(TIMER_ALARM,TIMER);  /* alarm at next tick (at 0xFFFFFFFF) */
   klock();
   /* we reinitialise the timer's interuption */
-  
+
   if(DEBUG){
     printf("\n !!!!!!!! CPT : %d!!!!!!!\n",cpt++);
     printf(GREEN"\n======================\n"RESET);

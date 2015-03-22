@@ -160,12 +160,14 @@ void f_ping(void *args)
     printf("I am ping on cor %d, i = %d\n", _in(CORE_ID), i);
     i++;
   }
-
+  while(1);
 }
 
 static
 void ping(){
   create_ctx(16380, &f_ping, (void*) NULL, "ping");
+  create_ctx(16380, &f_ping, (void*) NULL, "ping");
+  
 }
 
 
@@ -229,19 +231,16 @@ empty_it()
 void init() {
   int current_cor = _in(CORE_ID);
   _mask(1);
-  /* if(current_cor == 1) { */
-  /*   create_ctx(16380, (func_t *)loop, (void*) NULL, "loop"); */
-  /* } */
 
   printf(BOLDGREEN"core %d has finished to execute its first contexts. It is now waiting to steal some\n"RESET, current_cor);
 
   if(current_cor == 0) {
     /* printf("core n\n"); */
-    while(1){sleep(10000000);};
+    while(1);
   }  else {
     printf("[init] load bal started on cor %d\n", current_cor);
-    while(1){}
-    /* loadBalancer(current_cor); */
+    /* while(1){} */
+    loadBalancer(current_cor);
   }
   /* while(1); */
 
@@ -269,7 +268,6 @@ main() {
   }
 
   randRob = 0;
-  create_ctx(16380, (func_t *)loop, (void*) NULL, "loop");
 
   /* Interreupt handlers */
   for(i=1; i<16; i++)
@@ -277,17 +275,18 @@ main() {
 
   /* c'est la fonction appellé quand on lance le coeur */
   IRQVECTOR[0] = init;
+  create_ctx(16380, (func_t *)loop, (void*) NULL, "loop");
 
   /* on dit que l'on veut mettre en route 6 coeur */
-  _out(CORE_STATUS, 0x7);
-  
+  _out(CORE_STATUS,0x1F);
+
   /* on gere l'interuption */
   /* on fait en sorte que toute les interuption de type TIMER_IRQ sont redirige vers le coeur 2 */
   IRQVECTOR[TIMER_IRQ] = yield;
   for(i = 0; i < CORE_NCORE; i++)
     _out(CORE_IRQMAPPER + i, 0);
 
-  
+
   for(i = 1; i < CORE_NCORE; i++)
     _out(CORE_IRQMAPPER + i, 1 << TIMER_IRQ);
 
@@ -296,7 +295,7 @@ main() {
 
   /* on doit lancer cette fonction car sinon on sortirait driectement du prog */
   init();
-  
+
   return 0;
 }
 

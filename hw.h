@@ -33,7 +33,7 @@
 #define CORE_IRQMAPPER 130
 #define CORE_LOCK 152
 #define CORE_UNLOCK 153
-#define CORE_NCORE 3
+#define CORE_NCORE 5
 
 
 unsigned int enable_irq;
