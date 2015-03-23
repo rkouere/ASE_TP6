@@ -155,7 +155,7 @@ void f_ping(void *args)
 {
   int y, i = 0;
   printf("PING\n");
-  while(i<100000000) { 
+  while(1) { 
     /* printf("I am ping on cor %d, i = %d\n", _in(CORE_ID), i); */
     i++;
   }

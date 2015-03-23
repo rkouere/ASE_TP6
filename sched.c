@@ -112,7 +112,9 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   if(randRob%CORE_NCORE == 0) {
     randRob+=2;
   }
-
+  if(randRob%CORE_NCORE == 1) {
+    randRob++;
+  }
   printf("Rand bob = %d\n", randRob);
   int corToInit = randRob%CORE_NCORE;
   /* int corToInit = randRob; */
@@ -219,9 +221,7 @@ void yield(){
   /* printf(RED"YIELD CORE %d\n"RESET, _in(CORE_ID)); */
   /* we check that we initialised a context before */
   if(mega_ctx[currentCor].ring_head == NULL) {
-
     /* printf(BOLDBLUE "[yield] if NULL\n"RESET); */
-
     irq_enable();
     kunlock();
     return;
@@ -236,10 +236,11 @@ void yield(){
 
     switch_to_ctx(mega_ctx[currentCor].current_ctx);
   } else {
+    if(!mega_ctx[currentCor].current_ctx->ctx_next)
+      switch_to_ctx(mega_ctx[currentCor].current_ctx);
 
     /* we set the new context we are going to look at */
     struct ctx_s * ctx = mega_ctx[currentCor].current_ctx->ctx_next;
-
     /* we are going to try to find a context we can deal with */
     while(1){
       if(ctx->ctx_state == CTX_RDY) 
