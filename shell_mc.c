@@ -155,12 +155,11 @@ void f_ping(void *args)
 {
   int y, i = 0;
   printf("PING\n");
-  while(i < 10) {
-    for(y = 0; y < 10; y++){};
-    printf("I am ping on cor %d, i = %d\n", _in(CORE_ID), i);
+  while(i<100000000) { 
+    /* printf("I am ping on cor %d, i = %d\n", _in(CORE_ID), i); */
     i++;
   }
-  while(1);
+
 }
 
 static

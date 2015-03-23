@@ -110,17 +110,18 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
   struct ctx_s* new_ctx = (struct ctx_s*) calloc(1,sizeof(struct ctx_s));
   /* on fait en sorte de ne pas utiliser le core 1 */
   if(randRob%CORE_NCORE == 0) {
-    randRob+=1;
+    randRob+=2;
   }
+
   printf("Rand bob = %d\n", randRob);
   int corToInit = randRob%CORE_NCORE;
   /* int corToInit = randRob; */
 
   assert(new_ctx);
 
-  if(init_ctx(new_ctx, size, f, args ,name)){ 
-    /* error */ 
-    return 1; 
+  if(init_ctx(new_ctx, size, f, args ,name)){
+    /* error */
+    return 1;
   }
   /* if this is the first ctx that is initialised, we initialise the ring_head */
   if(!mega_ctx[corToInit].ring_head){
@@ -131,6 +132,7 @@ int create_ctx(int size, func_t f, struct parameters * args,char *name){
     new_ctx->ctx_next = mega_ctx[corToInit].ring_head->ctx_next;
     mega_ctx[corToInit].ring_head->ctx_next = new_ctx;
   }
+  randRob++;
   kunlock();
   irq_enable();
 
