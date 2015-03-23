@@ -339,6 +339,7 @@ void sem_up(struct sem_s *sem){
     sem->sem_head->ctx_state = CTX_EXQ;
     tmp = sem->sem_head->ctx_sem_next;
     sem->sem_head = tmp;
+    sem->sem_cpt--;
   }
   kunlock();
   irq_enable();
@@ -352,6 +353,7 @@ void sem_down(struct sem_s *sem){
       sem->sem_last=sem->sem_head = mega_ctx[currentCor].current_ctx;
       sem->sem_head->ctx_state = CTX_STP;
       yield();
+
     }
     sem->sem_last->ctx_sem_next = mega_ctx[currentCor].current_ctx;
     sem->sem_last = mega_ctx[currentCor].current_ctx;
